@@ -13,14 +13,25 @@
 **Iterate cheaply, then render once**
 
 1. **Smoke test:** megapixels **0.3**, duration **3 s**, color match / upscale / interpolation off. About a minute per try.
-2. Change prompt or seed until the motion is right.
-3. **Final:** same seed, megapixels **0.6** (or 0.8), duration **5 s**, color match on for loops, then optional upscale and interpolation.
+2. Change the prompt, or run again for a new seed, until the motion is right. When you like a result, fix its seed inside the subgraph (*Sample high-noise steps*: set *control after generate* to *fixed*).
+3. **Final:** with the seed fixed, megapixels **0.6** (or 0.8), duration **5 s**, color match on for loops, then optional upscale and interpolation.
    Motion changes a little with size and length, but stays close.
 
 **Prompting (this model)**
 
-- Describe the motion you want; the model follows the prompt more than the negative prompt.
-- To keep the mouth still, say it in the prompt: *"closed-mouth smile, lips stay closed and still, no talking"*. Avoid phrases like "smile widens". If the mouth still moves, turn **NAG** on.
+The developer's prompt guide (from ComfyUI-DaSiWa-Nodes, `data/llm_skills/wan.md`):
+
+- One paragraph of plain sentences, **80–120 words**, in this order: **subject → motion → camera → scene**. Wan pays most attention to what comes first.
+- **Subject:** name it briefly with two or three identifying details. The start image already shows the rest, so do not describe it again.
+- **Motion:** spend the most words here. Write verbs in sequence and say how each is done (slowly, sharply, hesitantly). Give the clip **one continuous action** with a beginning and an end; a list of separate events blurs together in five seconds.
+- **Camera:** one move, or holding still, with framing and angle. Two moves fight each other.
+- **Scene:** two or three concrete objects and the light, kept short.
+- Describe only what can be seen. If the idea is thin on motion, add small movements: hair moving, a glance, a breath, light shifting.
+
+From testing these workflows:
+
+- The model follows the prompt more than the negative prompt.
+- To keep the mouth still, say it in the prompt: *"closed-mouth smile, lips stay closed and still, no talking"*. Avoid phrases like "smile widens". If the mouth still moves, turn **negative** on.
 - For loops, describe a repeating motion that *"ends in the same pose it started in"*. Subtle, cyclic motion loops best.
 - Detailed, soft-rendered illustration keeps its look best at **0.6 MP or higher**. Below that, fine lines blur.
 

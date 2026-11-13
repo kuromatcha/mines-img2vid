@@ -86,9 +86,18 @@ SW = node("ComfySwitchNode", "Interpolation on/off", [3720, 660], [380, 140],
           [pin("on_false", "IMAGE", optional=True), pin("on_true", "IMAGE", optional=True), pin("switch", "BOOLEAN", widget=True)],
           [out("output", "IMAGE")], {"switch": False})
 
+# A front-panel setting must drive a widget inside, or ComfyUI shows it as an unconnected socket.
+# The math nodes have no widget for it, so the multiplier goes through a PrimitiveInt (as steps and fps do).
+PI = node("PrimitiveInt", "Interpolation multiplier", [4140, 1220], [380, 100],
+          [pin("value", "INT", widget=True)], [out("INT", "INT")], {"value": 1, "control_after_generate": "fixed"})
+for l in sg["links"]:                      # the existing multiplier -> output fps link
+    if l["origin_id"] == -10 and l["origin_slot"] == S_MULT:
+        sg["inputs"][S_MULT]["linkIds"].remove(l["id"])
+        l["origin_id"], l["origin_slot"] = PI, 0
+lk(-10, S_MULT, PI, 0, "INT")
 lk(-10, S_CKPT, LD, 0, "COMBO")
-lk(-10, S_MULT, MX, 0, "INT")
-lk(-10, S_MULT, ON, 0, "INT")
+lk(PI, 0, MX, 0, "INT")
+lk(PI, 0, ON, 0, "INT")
 lk(LD, 0, FI, 0, "INTERP_MODEL")
 lk(175, 0, FI, 1, "IMAGE")
 lk(MX, 1, FI, 2, "INT")

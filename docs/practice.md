@@ -13,8 +13,8 @@
 **Iterate cheaply, then render once**
 
 1. **Smoke test:** megapixels **0.3**, duration **3 s**, color match / upscale / interpolation off. About a minute per try.
-2. Change prompt or seed until the motion is right.
-3. **Final:** same seed, megapixels **0.6** (or 0.8), duration **5 s**, color match on for loops, then optional upscale and interpolation.
+2. Change the prompt, or run again for a new seed, until the motion is right. When you like a result, fix its seed inside the subgraph (*Sample high-noise steps*: set *control after generate* to *fixed*).
+3. **Final:** with the seed fixed, megapixels **0.6** (or 0.8), duration **5 s**, color match on for loops, then optional upscale and interpolation.
    Motion changes a little with size and length, but stays close.
 
 **Prompting (this model)**
@@ -31,7 +31,7 @@ The developer's prompt guide (from ComfyUI-DaSiWa-Nodes, `data/llm_skills/wan.md
 From testing these workflows:
 
 - The model follows the prompt more than the negative prompt.
-- To keep the mouth still, say it in the prompt: *"closed-mouth smile, lips stay closed and still, no talking"*. Avoid phrases like "smile widens". If the mouth still moves, turn **NAG** on.
+- To keep the mouth still, say it in the prompt: *"closed-mouth smile, lips stay closed and still, no talking"*. Avoid phrases like "smile widens". If the mouth still moves, turn NAG on (inside the subgraph: both *Switch: NAG* nodes).
 - For loops, describe a repeating motion that *"ends in the same pose it started in"*. Subtle, cyclic motion loops best.
 - Detailed, soft-rendered illustration keeps its look best at **0.6 MP or higher**. Below that, fine lines blur.
 

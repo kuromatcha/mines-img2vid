@@ -23,7 +23,7 @@ Install with ComfyUI-Manager ("Install Custom Nodes") or `git clone` into `Comfy
 |---|---|---|
 | **ComfyUI-GGUF** | GGUF model loader (GGUF workflows) | https://github.com/city96/ComfyUI-GGUF |
 | **ComfyUI-DaSiWa-Nodes** | `Seamless Loop` node (loop workflows), `RTX Upscaler & Refiner` node (optional RTX upscale, all 4 workflows) | https://github.com/darksidewalker/ComfyUI-DaSiWa-Nodes |
-| **ComfyUI-KJNodes** | `Wan Chunk FeedForward` node (optional FFN chunking, all 4 workflows) | https://github.com/kijai/ComfyUI-KJNodes |
+| **ComfyUI-KJNodes** | `Wan Chunk FeedForward` node (optional FFN chunking, all workflows); `Wan Image To Video SVIPro` and `Image Batch Extend With Overlap` (Long workflows); `Model Patch Torch Settings` (GGUF fix) | https://github.com/kijai/ComfyUI-KJNodes |
 
 ComfyUI-DaSiWa-Nodes lists heavy extras in its `requirements.txt` (LLM, RTX, AMD tools). **Seamless Loop does not need them.** The pack loads without installing them; they only load when you use those other nodes. If an installer insists, skipping `llama-cpp-python` is fine (it often fails to build on Windows).
 
@@ -50,6 +50,8 @@ All paths are inside `ComfyUI/models/` (or your shared models folder).
 | `text_encoders/` | `umt5_xxl_fp8_e4m3fn_scaled.safetensors` | 6.3 GB | [Comfy-Org/Wan_2.2_ComfyUI_Repackaged](https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged) → `split_files/text_encoders/` |
 | `vae/` | `wan_2.1_vae.safetensors` | 0.24 GB | same repo → `split_files/vae/` |
 | `frame_interpolation/` | `rife_v4.26.safetensors` | 23 MB | [Comfy-Org/frame_interpolation](https://huggingface.co/Comfy-Org/frame_interpolation) → `frame_interpolation/` (used by Seamless Loop and by the optional interpolation in all 4 workflows) |
+| `loras/` | `SVI_v2_PRO_Wan2.2-I2V-A14B_HIGH_lora_rank_128_fp16.safetensors` | 1.23 GB | [Kijai/WanVideo_comfy](https://huggingface.co/Kijai/WanVideo_comfy/tree/main/LoRAs/Stable-Video-Infinity/v2.0) → `LoRAs/Stable-Video-Infinity/v2.0/` *(Long workflows)* |
+| `loras/` | `SVI_v2_PRO_Wan2.2-I2V-A14B_LOW_lora_rank_128_fp16.safetensors` | 1.23 GB | same |
 | `upscale_models/` | `2x-AnimeSharpV4_RCAN.safetensors` | 31 MB | [Kim2091/2x-AnimeSharpV4](https://huggingface.co/Kim2091/2x-AnimeSharpV4) *(optional upscale)* |
 
 **Gated DaSiWa repo:** log in to Hugging Face, open the repo page and accept the access request. Then either download in the browser, or log in once from a terminal with ComfyUI's Python and download from there:

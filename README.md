@@ -8,6 +8,8 @@ ComfyUI image-to-video workflows for **DaSiWa WAN 2.2 I2V 14B v11**, set up with
 | **DaSiWa Loop NVFP4** | Seamless loop, faster | RTX 50-series |
 | **DaSiWa I2V GGUF** | Image to video | any NVIDIA GPU, 16 GB+ |
 | **DaSiWa I2V NVFP4** | Image to video, faster | RTX 50-series |
+| **DaSiWa Long GGUF** | Longer video, one prompt per 5 s segment (SVI 2.0 Pro) | any NVIDIA GPU, 16 GB+ |
+| **DaSiWa Long NVFP4** | Longer video, faster | RTX 50-series |
 
 ## Quick start
 

@@ -4,7 +4,7 @@ Values in **bold** are the defaults in these workflows. "dev" means the DaSiWa d
 
 | Setting | Default | Suggestion |
 |---|---|---|
-| prompt | your text | Structure (dev): 1) setting and appearance, 2) actions and motion, 3) camera. |
+| prompt | your text | Structure (dev): 1) subject, 2) motion, 3) camera, 4) scene. One paragraph, 80–120 words, most of them on motion. See [Recommended practice](practice.md). |
 | negative prompt | "talking, speaking, mouth moving…" | Only has an effect when **NAG is on** or **CFG > 1**. |
 | quality in megapixels | **0.6** | **0.3** smoke test · **0.6** baseline · **0.8** HD (dev range 0.52–0.83). Keeps the image's shape, any ratio. |
 | duration (seconds) | **5** | dev: **5 s at 16 fps** (or 3 s at 24 fps) is Wan 2.2's native length; longer clips drift and wash out. |

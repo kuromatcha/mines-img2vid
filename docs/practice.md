@@ -19,7 +19,18 @@
 
 **Prompting (this model)**
 
-- Describe the motion you want; the model follows the prompt more than the negative prompt.
+The developer's prompt guide (from ComfyUI-DaSiWa-Nodes, `data/llm_skills/wan.md`):
+
+- One paragraph of plain sentences, **80–120 words**, in this order: **subject → motion → camera → scene**. Wan pays most attention to what comes first.
+- **Subject:** name it briefly with two or three identifying details. The start image already shows the rest, so do not describe it again.
+- **Motion:** spend the most words here. Write verbs in sequence and say how each is done (slowly, sharply, hesitantly). Give the clip **one continuous action** with a beginning and an end; a list of separate events blurs together in five seconds.
+- **Camera:** one move, or holding still, with framing and angle. Two moves fight each other.
+- **Scene:** two or three concrete objects and the light, kept short.
+- Describe only what can be seen. If the idea is thin on motion, add small movements: hair moving, a glance, a breath, light shifting.
+
+From testing these workflows:
+
+- The model follows the prompt more than the negative prompt.
 - To keep the mouth still, say it in the prompt: *"closed-mouth smile, lips stay closed and still, no talking"*. Avoid phrases like "smile widens". If the mouth still moves, turn **NAG** on.
 - For loops, describe a repeating motion that *"ends in the same pose it started in"*. Subtle, cyclic motion loops best.
 - Detailed, soft-rendered illustration keeps its look best at **0.6 MP or higher**. Below that, fine lines blur.

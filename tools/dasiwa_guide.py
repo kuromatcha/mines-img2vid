@@ -69,10 +69,27 @@ if "nag_on" not in [i["name"] for i in sg["inputs"]]:
     wn = [i["name"] for i in outer["inputs"] if i.get("widget")]
     outer["widgets_values"] = [vals[n] for n in wn]
     outer["widgets_values_named"] = {n: vals[n] for n in wn}
+# "negative" drives only the high-noise NAG: motion (e.g. talking) is set in the high-noise steps, and NAG doubles
+# the cost of every step it runs on. The low-noise NAG switch stays inside the subgraph, off.
+nag_in = [i for i in sg["inputs"] if i["name"] == "nag_on"][0]
+low = [n for n in sg["nodes"] if (n.get("title") or "") in ("Switch: NAG (low)", "NAG on/off · low")]
+assert len(low) == 1, "expected one low-noise NAG switch"
+low = low[0]
+k = [j for j, i in enumerate(low["inputs"]) if i["name"] == "switch"][0]
+drop = {l["id"] for l in sg["links"] if l["origin_id"] == -10 and l["target_id"] == low["id"] and l["target_slot"] == k}
+sg["links"] = [l for l in sg["links"] if l["id"] not in drop]
+nag_in["linkIds"] = [x for x in nag_in["linkIds"] if x not in drop]
+low["inputs"][k]["link"] = None
+low["widgets_values"] = [False]
+low["widgets_values_named"] = {"switch": False}
+assert len(nag_in["linkIds"]) == 1, "negative should drive exactly the high-noise NAG switch"
 # Front panel order: values first, on/off toggles together at the bottom (stable within each group).
 wn = [i["name"] for i in outer["inputs"] if i.get("widget")]
 vals = dict(zip(wn, outer["widgets_values"]))
-order = sorted(range(len(sg["inputs"])), key=lambda k: sg["inputs"][k]["type"] == "BOOLEAN")
+TOGGLES = ["chunk_on", "nag_on", "switch", "rtx_on"]  # FFN chunking, negative, model upscale, RTX upscale
+assert {i["name"] for i in sg["inputs"] if i["type"] == "BOOLEAN"} == set(TOGGLES), "toggles changed"
+order = sorted(range(len(sg["inputs"])), key=lambda k: (sg["inputs"][k]["type"] == "BOOLEAN",
+               TOGGLES.index(sg["inputs"][k]["name"]) if sg["inputs"][k]["type"] == "BOOLEAN" else k))
 sg["inputs"] = [sg["inputs"][k] for k in order]
 by_name = {i["name"]: i for i in outer["inputs"]}
 outer["inputs"] = [by_name[i["name"]] for i in sg["inputs"]]
@@ -164,8 +181,8 @@ GUIDE = f"""# Guide
 - **fps**: 16 · 24 for fast motion
 - **color match strength**: {"0.75. Stops the flash at the loop point." if loop else "0 off · 0.75 on"}
 - **interpolation multiplier**: 1 off · 2 doubles fps
-- **negative**: applies the negative prompt (NAG). Uses more VRAM.
 - **FFN chunking**: less VRAM, slower. On from 0.7 MP.
+- **negative**: applies the negative prompt (NAG) in the high-noise steps. Slower, more VRAM.
 - **model upscale**: 2× AnimeSharp. Slow, sharp.
 - **RTX upscale**: 2× RTX VSR. Fast, mild. Overrides model upscale. Needs `nvidia-vfx`.
 
@@ -173,6 +190,7 @@ GUIDE = f"""# Guide
 - Steps 4 · split 2 · cfg 1 · shift 5 · euler / simple
 - Seed: random. To keep one: *Sample high-noise steps* → fixed.
 - NAG scale 11: the *Apply NAG* nodes.
+- NAG in the low-noise steps too: *Switch: NAG (low)* (off).
 - Model files: the *Load …* nodes.
 
 ## Routine

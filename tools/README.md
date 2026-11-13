@@ -17,6 +17,6 @@ One-off Python scripts that built the workflows in `../workflows` from the origi
 | 11 | `dasiwa_tidy.py` | Layout clean-up: short names, grid, groups, setting order. |
 | 12 | `dasiwa_coreinterp.py` | Interpolation with ComfyUI's built-in RIFE nodes (skipped at multiplier 1), interpolated loop point for loops, fps default 16. |
 | 13 | `dasiwa_rtx.py` | Added the optional RTX Video Super Resolution upscale behind a lazy switch (used instead of the model upscale). |
-| 14 | `dasiwa_guide.py` | Plain setting names, literal node titles, one Guide note with all the advice; sampling settings (steps, split step, seed, cfg, shift, sampler, scheduler, NAG scale) and the model pickers moved off the front panel; NAG on/off stays as **negative**. |
+| 14 | `dasiwa_guide.py` | Plain setting names, literal node titles, one Guide note with all the advice; sampling settings (steps, split step, seed, cfg, shift, sampler, scheduler, NAG scale) and the model pickers moved off the front panel; NAG on/off stays as **negative**, driving only the high-noise NAG; toggle order FFN chunking, negative, model upscale, RTX upscale. |
 
 Run with ComfyUI's Python, e.g. `python -I tools/dasiwa_tidy.py "workflows/DaSiWa Loop GGUF.json"`. Back up the workflow first.

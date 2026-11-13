@@ -28,3 +28,21 @@ Values in **bold** are the defaults in these workflows. The setting names match 
 - *Switch: NAG (low)*: **off**. Turn on to apply NAG in the low-noise steps too (full NAG, about 2× the sampling time), if the mouth still opens or shows teeth with **negative** on.
 - *Scale to megapixels → resolution_steps*: **16** (closest to the image's shape) or **32** (the developer's Div32).
 - *Attention backend* nodes (one per model): **comfy kitchen attention** (dev default, faster INT8 attention). Set to *pytorch attention* to turn off.
+
+## Long workflows
+
+Same settings as I2V, plus:
+
+| Setting | Default | Suggestion |
+|---|---|---|
+| prompt 1, prompt 2, … | your text | One prompt per segment. Describe only that segment's motion; repeat camera and scene in each. The next segment continues from where the last one ended. |
+| segment length (seconds) | **5** | Length of each segment. Keep 5 (81 frames); longer segments wash out colors. |
+| color match strength | **0.75** | Higher than in I2V on purpose: without it, a 4-segment test lost 25% contrast and 16% saturation by the last segment; at 0.75 the loss was 6% and 4%. |
+
+**Inside the subgraph:**
+
+- *Apply SVI LoRA (high)* and *(low)*: **1.0**. The SVI 2.0 Pro LoRAs that keep the character and the motion going across segments.
+- *Build segment N latent (SVI)* → motion_latent_count: **1** (how much of the previous segment is carried over).
+- *Join segment N*: overlap **5**. A new segment starts by replaying the last 5 frames of the previous one; the two copies are cross-faded, so each extra segment adds 76 new frames (4.75 s).
+- *Sample high-noise steps (segment N)*: each segment has its own seed.
+- More segments: rebuild with `tools/dasiwa_long.py` (see [Tools](../tools/README.md)).

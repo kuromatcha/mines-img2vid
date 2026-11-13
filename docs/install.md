@@ -12,7 +12,7 @@ Everything a new PC needs to run the workflows.
 ## ComfyUI
 
 - **Comfy Desktop with ComfyUI 0.45.3 or newer** (tested on 0.45.3, PyTorch 2.12.1 + CUDA 13.0, Python 3.13).
-  Several built-in nodes used here (Transfer Color, Switch, Math Expression, Model Attention Backend, NAG, Wan First-Last-Frame) only exist in recent versions.
+  Several built-in nodes used here (Transfer Color, Switch, Math Expression, Model Attention Backend, NAG, Wan First-Last-Frame, Frame Interpolation) only exist in recent versions.
 - RTX 50-series needs the **CUDA 13 (cu130)** PyTorch build. Comfy Desktop installs it automatically.
 
 ## Custom node packs
@@ -22,11 +22,20 @@ Install with ComfyUI-Manager ("Install Custom Nodes") or `git clone` into `Comfy
 | Pack | Needed for | Source |
 |---|---|---|
 | **ComfyUI-GGUF** | GGUF model loader (GGUF workflows) | https://github.com/city96/ComfyUI-GGUF |
-| **ComfyUI-Frame-Interpolation** | `RIFE VFI` node (optional interpolation, all 4 workflows) | https://github.com/Fannovel16/ComfyUI-Frame-Interpolation |
-| **ComfyUI-DaSiWa-Nodes** | `Seamless Loop` node (loop workflows) | https://github.com/darksidewalker/ComfyUI-DaSiWa-Nodes |
+| **ComfyUI-DaSiWa-Nodes** | `Seamless Loop` node (loop workflows), `RTX Upscaler & Refiner` node (optional RTX upscale, all 4 workflows) | https://github.com/darksidewalker/ComfyUI-DaSiWa-Nodes |
 | **ComfyUI-KJNodes** | `Wan Chunk FeedForward` node (optional FFN chunking, all 4 workflows) | https://github.com/kijai/ComfyUI-KJNodes |
 
 ComfyUI-DaSiWa-Nodes lists heavy extras in its `requirements.txt` (LLM, RTX, AMD tools). **Seamless Loop does not need them.** The pack loads without installing them; they only load when you use those other nodes. If an installer insists, skipping `llama-cpp-python` is fine (it often fails to build on Windows).
+
+### RTX upscale (optional)
+
+The **RTX upscale** toggle needs NVIDIA's `nvidia-vfx` package (about 435 MB, NVIDIA RTX GPU only) in ComfyUI's Python environment. Close ComfyUI, install it, then start ComfyUI again:
+
+```powershell
+& "<ComfyUI>\.venv\Scripts\python.exe" -m pip install nvidia-vfx
+```
+
+Tested with `nvidia-vfx` 0.2.0.0. Without the package the workflows still load and run; only turning the RTX toggle on gives an error.
 
 ## Model files
 
@@ -40,9 +49,8 @@ All paths are inside `ComfyUI/models/` (or your shared models folder).
 | `diffusion_models/` | `DasiwaWAN22I2V14BLightspeed_snatchkissLowV11-NVFP4.safetensors` | 7.8 GB | same |
 | `text_encoders/` | `umt5_xxl_fp8_e4m3fn_scaled.safetensors` | 6.3 GB | [Comfy-Org/Wan_2.2_ComfyUI_Repackaged](https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged) → `split_files/text_encoders/` |
 | `vae/` | `wan_2.1_vae.safetensors` | 0.24 GB | same repo → `split_files/vae/` |
-| `frame_interpolation/` | `rife_v4.26.safetensors` | 23 MB | [Comfy-Org/frame_interpolation](https://huggingface.co/Comfy-Org/frame_interpolation) → `frame_interpolation/` (used by Seamless Loop) |
+| `frame_interpolation/` | `rife_v4.26.safetensors` | 23 MB | [Comfy-Org/frame_interpolation](https://huggingface.co/Comfy-Org/frame_interpolation) → `frame_interpolation/` (used by Seamless Loop and by the optional interpolation in all 4 workflows) |
 | `upscale_models/` | `2x-AnimeSharpV4_RCAN.safetensors` | 31 MB | [Kim2091/2x-AnimeSharpV4](https://huggingface.co/Kim2091/2x-AnimeSharpV4) *(optional upscale)* |
-| *(automatic)* | `rife49.pth` | — | downloaded by ComfyUI-Frame-Interpolation on first use of `RIFE VFI` |
 
 **Gated DaSiWa repo:** log in to Hugging Face, open the repo page and accept the access request. Then either download in the browser, or log in once from a terminal with ComfyUI's Python and download from there:
 

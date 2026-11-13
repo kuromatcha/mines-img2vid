@@ -20,7 +20,8 @@ Values in **bold** are the defaults in these workflows. "dev" means the DaSiWa d
 | sampler / scheduler | **euler / simple** | dev: euler/simple always works; uni_pc_bh2/simple or euler/linear_quadratic as alternatives. |
 | color match strength | **0.75** loop · **0** I2V | dev: 0.75 when used. Keep it on for loops (stops the washed-out end and the flash at the loop point). |
 | upscale with model | **off** | AnimeSharpV4 doubles each side. Slow; sharpens line art, can harden soft shading. |
-| interpolation multiplier | **1 (off)** | 2 = double fps with RIFE. Leave at 1 while testing. |
+| RTX upscale 2× | **off** | NVIDIA RTX Video Super Resolution doubles each side. Fast and mild. When on it is used *instead of* the upscale model. Needs `nvidia-vfx` (see [install](install.md)). Mode, quality and scale are inside the subgraph (*RTX upscale* node: VSR / Ultra / 2.0; try *High Bitrate* mode for a softer, cleaner result). |
+| interpolation multiplier | **1 (off)** | 2 = double fps with RIFE (built-in ComfyUI node, `rife_v4.26`). At 1 the step is skipped entirely. Loops stay seamless when interpolated. Leave at 1 while testing. |
 
 **Inside the subgraph (advanced):**
 

@@ -6,6 +6,7 @@ Values in **bold** are the defaults in these workflows. The setting names match 
 |---|---|---|
 | prompt | your text | Structure (dev): 1) subject, 2) motion, 3) camera, 4) scene. One paragraph, 80–120 words, most of them on motion. See [Recommended practice](practice.md). |
 | negative prompt | "talking, speaking, mouth moving…" | Only has an effect when **negative** is on (or CFG is above 1, inside the subgraph). |
+| end image | **none** | Optional (I2V and Long). The pose the clip ends on, e.g. the front view of a character who turns, or a different pose from a character sheet. At **none** it is skipped and the clip ends wherever the motion goes. Use an image with the same framing, background, outfit and art style as the start image; a mismatch gives a morph or cross-fade instead of motion. A different aspect ratio is center-cropped to the start image's shape. The prompt should describe the motion that gets from the start pose to the end pose. |
 | negative | **off** | Turns on NAG in the high-noise steps, which makes the negative prompt work at CFG 1, e.g. to stop mouth movement. Motion is set in those steps, so this covers most of the effect. NAG doubles the time of each step it runs on (measured: 30 → 60 s per step at 1.0 MP), so with only the high-noise half it costs about 1.5× the sampling time. Dev default off; uses more VRAM. |
 | megapixels | **0.6** | **0.3** smoke test · **0.6** baseline · **0.8** HD (dev range 0.52–0.83). Keeps the image's shape, any ratio. |
 | duration (seconds) | **5** | dev: **5 s at 16 fps** (or 3 s at 24 fps) is Wan 2.2's native length; longer clips drift and wash out. |
@@ -36,6 +37,7 @@ Same settings as I2V, plus:
 | Setting | Default | Suggestion |
 |---|---|---|
 | prompt 1, prompt 2, … | your text | One prompt per segment. Describe only that segment's motion; repeat camera and scene in each. The next segment continues from where the last one ended. |
+| end image 1, end image 2, … | **none** | Optional end pose for each segment. A segment at **none** ends freely; either way the next segment continues from the last frames of the one before. |
 | segment length (seconds) | **5** | Length of each segment. Keep 5 (81 frames); longer segments wash out colors. |
 | color match strength | **0.75** | Higher than in I2V on purpose: without it, a 4-segment test lost 25% contrast and 16% saturation by the last segment; at 0.75 the loss was 6% and 4%. |
 

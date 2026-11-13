@@ -5,7 +5,8 @@ Values in **bold** are the defaults in these workflows. The setting names match 
 | Setting | Default | Suggestion |
 |---|---|---|
 | prompt | your text | Structure (dev): 1) subject, 2) motion, 3) camera, 4) scene. One paragraph, 80–120 words, most of them on motion. See [Recommended practice](practice.md). |
-| negative prompt | "talking, speaking, mouth moving…" | Only has an effect when NAG is on or CFG is above 1 (both inside the subgraph). |
+| negative prompt | "talking, speaking, mouth moving…" | Only has an effect when **negative** is on (or CFG is above 1, inside the subgraph). |
+| negative | **off** | Turns on NAG, which makes the negative prompt work at CFG 1, e.g. to stop mouth movement. Dev default off; uses a lot of VRAM. |
 | megapixels | **0.6** | **0.3** smoke test · **0.6** baseline · **0.8** HD (dev range 0.52–0.83). Keeps the image's shape, any ratio. |
 | duration (seconds) | **5** | dev: **5 s at 16 fps** (or 3 s at 24 fps) is Wan 2.2's native length; longer clips drift and wash out. |
 | fps | **16** | dev: 16, or 24 for faster motion. 12 looks choppy. |
@@ -23,6 +24,6 @@ Values in **bold** are the defaults in these workflows. The setting names match 
 - *CFG*: **1** (dev: 1–1.5). 1 is fastest and ignores the negative prompt.
 - *Set shift (high)* and *Set shift (low)*: **5** (dev: 5, valid 5–10). Change both.
 - *Sample high-noise steps* and *Sample low-noise steps* → sampler / scheduler: **euler / simple** (dev: always works; euler/linear_quadratic or uni_pc_bh2/simple as alternatives). Change both.
-- *Switch: NAG (high)* and *Switch: NAG (low)*: **off** (dev default; uses a lot of VRAM). Set both to true to make the negative prompt work at CFG 1, e.g. to stop mouth movement. *Apply NAG* → nag_scale: **11** (dev).
+- *Apply NAG (high)* and *Apply NAG (low)* → nag_scale: **11** (dev). Used when **negative** is on.
 - *Scale to megapixels → resolution_steps*: **16** (closest to the image's shape) or **32** (the developer's Div32).
 - *Attention backend* nodes (one per model): **comfy kitchen attention** (dev default, faster INT8 attention). Set to *pytorch attention* to turn off.

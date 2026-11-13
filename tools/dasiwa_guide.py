@@ -5,7 +5,7 @@
 - All advice moves to a single Markdown note ("Guide") beside the video output.
 Run last. Safe to run again: it replaces the labels, titles and the guide note.
 """
-import json, sys
+import json, sys, uuid
 
 path = sys.argv[1]
 d = json.load(open(path, encoding="utf-8"))
@@ -14,8 +14,8 @@ outer = [n for n in d["nodes"] if n["type"] == sg["id"]][0]
 loop = any(n["type"] == "DaSiWa_SeamlessLoop" for n in sg["nodes"])
 
 # Settings that never change for this distilled model leave the front panel; the value stays on the node inside.
-# steps (4), split step (2), seed (random on every run), cfg (1), shift (5), sampler, scheduler, NAG, NAG scale
-HIDE = ["value_2", "value_3", "noise_seed", "cfg", "shift", "sampler_name", "scheduler", "nag_on", "nag_scale",
+# steps (4), split step (2), seed (random on every run), cfg (1), shift (5), sampler, scheduler, NAG scale
+HIDE = ["value_2", "value_3", "noise_seed", "cfg", "shift", "sampler_name", "scheduler", "nag_scale",
         "model_name", "ckpt_name"]  # upscale model and interpolation model files are picked on their loader nodes
 for name in HIDE:
     names = [i["name"] for i in sg["inputs"]]
@@ -38,6 +38,37 @@ for name in HIDE:
     outer["inputs"] = [i for i in outer["inputs"] if i["name"] != name]
     outer["widgets_values"] = list(vals.values())
     outer["widgets_values_named"] = dict(vals)
+# NAG on/off stays on the front panel as "negative" (it decides whether the negative prompt does anything).
+# Re-add it if an earlier run of this script hid it: one toggle driving both NAG switches.
+if "nag_on" not in [i["name"] for i in sg["inputs"]]:
+    nag_sw = [n for n in sg["nodes"] if n["type"] == "ComfySwitchNode"
+              and (n.get("title") or "").startswith(("Switch: NAG", "NAG on/off"))]
+    assert len(nag_sw) == 2, "expected the two NAG switches"
+    names = [i["name"] for i in sg["inputs"]]
+    pos = next((k for k, i in enumerate(sg["inputs"]) if i["type"] == "BOOLEAN"), len(names))
+    for l in sg["links"]:
+        if l["origin_id"] == -10 and l["origin_slot"] >= pos:
+            l["origin_slot"] += 1
+    tin = {"id": str(uuid.uuid4()), "name": "nag_on", "type": "BOOLEAN", "linkIds": [], "label": "negative", "pos": [0, 0]}
+    sg["inputs"].insert(pos, tin)
+    lid = max(l["id"] for l in sg["links"])
+    for n in nag_sw:
+        lid += 1
+        k = [j for j, i in enumerate(n["inputs"]) if i["name"] == "switch"][0]
+        assert n["inputs"][k]["link"] is None
+        sg["links"].append({"id": lid, "origin_id": -10, "origin_slot": pos, "target_id": n["id"], "target_slot": k, "type": "BOOLEAN"})
+        n["inputs"][k]["link"] = lid
+        tin["linkIds"].append(lid)
+    sg["state"]["lastLinkId"] = max(sg["state"]["lastLinkId"], lid)
+    wn = [i["name"] for i in outer["inputs"] if i.get("widget")]
+    vals = dict(zip(wn, outer["widgets_values"]))
+    vals["nag_on"] = False
+    after = sg["inputs"][pos - 1]["name"] if pos else None
+    at = [i["name"] for i in outer["inputs"]].index(after) + 1 if after else 0
+    outer["inputs"].insert(at, {"label": "negative", "name": "nag_on", "type": "BOOLEAN", "widget": {"name": "nag_on"}, "link": None})
+    wn = [i["name"] for i in outer["inputs"] if i.get("widget")]
+    outer["widgets_values"] = [vals[n] for n in wn]
+    outer["widgets_values_named"] = {n: vals[n] for n in wn}
 # Front panel order: values first, on/off toggles together at the bottom (stable within each group).
 wn = [i["name"] for i in outer["inputs"] if i.get("widget")]
 vals = dict(zip(wn, outer["widgets_values"]))
@@ -68,7 +99,7 @@ for n in sg["nodes"]:  # with the seed off the front panel, the sampler draws a 
 LABELS = {
     "text": "prompt", "text_1": "negative prompt", "megapixels": "megapixels", "value_1": "duration (seconds)",
     "value_4": "fps",
-    "chunk_on": "FFN chunking", "strength": "color match strength", "switch": "model upscale",
+    "nag_on": "negative", "chunk_on": "FFN chunking", "strength": "color match strength", "switch": "model upscale",
     "rtx_on": "RTX upscale", "multiplier": "interpolation multiplier",
 }
 for i in sg["inputs"] + outer["inputs"]:
@@ -120,44 +151,36 @@ for n in sg["nodes"]:
 
 GUIDE = f"""# Guide
 
-Load an image, write a prompt, run. Defaults are the model developer's.
-
 ## Prompt
-- One paragraph, 80–120 words: **subject → motion → camera → scene**.
-- Name the subject briefly; the image shows the rest. Spend the words on motion.
-- One continuous action, one camera move (or a still camera).
-{"- For a loop, describe a repeating motion that ends in the pose it started in." if loop else "- Use the Loop workflow when the clip should end where it started."}
-- **negative prompt** only works with NAG on or cfg above 1 (both inside the subgraph, see below).
+- 80–120 words: **subject → motion → camera → scene**.
+- Subject in a few words; spend the rest on motion.
+- One action, one camera move.
+{"- Motion ends in the starting pose." if loop else "- Same start and end pose: use the Loop workflow."}
+- Negative prompt works only with **negative** on.
 
-## Size and length
-- **megapixels**: 0.3 quick test · 0.6 normal · 0.8 high (turn **FFN chunking** on).
-- **duration (seconds)**: 5 is the model's native length; longer clips drift.
-- **fps**: 16, or 24 for faster motion.
+## Settings
+- **megapixels**: 0.3 test · 0.6 final · 0.8 high (FFN chunking on)
+- **duration (seconds)**: 5. Longer drifts.
+- **fps**: 16 · 24 for fast motion
+- **color match strength**: {"0.75. Stops the flash at the loop point." if loop else "0 off · 0.75 on"}
+- **interpolation multiplier**: 1 off · 2 doubles fps
+- **negative**: applies the negative prompt (NAG). Uses more VRAM.
+- **FFN chunking**: less VRAM, slower. On from 0.7 MP.
+- **model upscale**: 2× AnimeSharp. Slow, sharp.
+- **RTX upscale**: 2× RTX VSR. Fast, mild. Overrides model upscale. Needs `nvidia-vfx`.
 
-## Sampling (inside the subgraph)
-These follow the model developer and are not on the front panel. Open the subgraph to change them.
-- Steps 4, split step 2, cfg 1, shift 5, euler / simple.
-- The seed is random on every run. To repeat a result, on *Sample high-noise steps* set the seed and switch *control after generate* to fixed.
-- NAG makes the negative prompt work at cfg 1 (e.g. to stop mouth movement) and uses more VRAM. To turn it on, set both *Switch: NAG (high)* and *Switch: NAG (low)* to true.
-
-## Model files (inside the subgraph)
-Pick the files on the loader nodes: *Load high-noise model*, *Load low-noise model*, *Load text encoder*, *Load VAE*, *Load upscale model*, *Load interpolation model*.
-
-## Memory
-- **FFN chunking**: lowers peak VRAM, slightly slower. Use from 0.7 megapixels up on 16 GB.
-
-## After sampling
-- **color match strength**: {"0.75 keeps the loop from washing out or flashing at the loop point." if loop else "0 is off. 0.75 pulls colors back to the start image."}
-- **model upscale**: doubles each side with AnimeSharpV4. Slow, sharp lines.
-- **RTX upscale**: doubles each side with NVIDIA RTX Video Super Resolution. Fast, mild. Replaces the model upscale when both are on. Needs the `nvidia-vfx` package.
-- **interpolation multiplier**: 1 is off, 2 doubles the fps{" (the loop stays seamless)" if loop else ""}.
+## Inside the subgraph
+- Steps 4 · split 2 · cfg 1 · shift 5 · euler / simple
+- Seed: random. To keep one: *Sample high-noise steps* → fixed.
+- NAG scale 11: the *Apply NAG* nodes.
+- Model files: the *Load …* nodes.
 
 ## Routine
-1. Test at 0.3 megapixels, 3 seconds, everything under *After sampling* off.
-2. Change the prompt, or just run again for a new seed, until the motion is right.
-3. Render the final at 0.6 megapixels, 5 seconds, then add upscale or interpolation. Fix the seed inside the subgraph first if you want the same motion.
+1. Test: 0.3 MP, 3 s, extras off.
+2. Rerun until the motion is right, then fix the seed.
+3. Final: 0.6 MP, 5 s, then upscale / interpolation.
 
-Out of memory: turn FFN chunking on or lower megapixels, then restart ComfyUI.
+Out of memory: FFN chunking on or lower MP, then restart ComfyUI.
 """
 
 outer["size"] = [outer["size"][0], 640]  # fewer settings: same height as the image and video nodes

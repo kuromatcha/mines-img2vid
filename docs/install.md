@@ -23,6 +23,7 @@ Install with ComfyUI-Manager ("Install Custom Nodes") or `git clone` into `Comfy
 |---|---|---|
 | **ComfyUI-GGUF** | GGUF model loader (GGUF workflows) | https://github.com/city96/ComfyUI-GGUF |
 | **ComfyUI-DaSiWa-Nodes** | `Seamless Loop` node (loop workflows), `RTX Upscaler & Refiner` node (optional RTX upscale, all 4 workflows) | https://github.com/darksidewalker/ComfyUI-DaSiWa-Nodes |
+| **ComfyUI-DaSiWa-EndFrame** | `Load Image (optional)` (end image, I2V and Long workflows); `Wan Image To Video SVIPro (end frame)` (Long workflows) | this repository, [`custom_nodes/`](../custom_nodes) — copy the `ComfyUI-DaSiWa-EndFrame` folder into `ComfyUI/custom_nodes/` |
 | **ComfyUI-KJNodes** | `Wan Chunk FeedForward` node (optional FFN chunking, all workflows); `Wan Image To Video SVIPro` and `Image Batch Extend With Overlap` (Long workflows); `Model Patch Torch Settings` (GGUF fix) | https://github.com/kijai/ComfyUI-KJNodes |
 
 ComfyUI-DaSiWa-Nodes lists heavy extras in its `requirements.txt` (LLM, RTX, AMD tools). **Seamless Loop does not need them.** The pack loads without installing them; they only load when you use those other nodes. If an installer insists, skipping `llama-cpp-python` is fine (it often fails to build on Windows).

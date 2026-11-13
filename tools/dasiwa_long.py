@@ -5,11 +5,17 @@ Usage: python -I tools/dasiwa_long.py <finished I2V workflow> <output workflow> 
 - SVI 2.0 Pro LoRAs on both models (KJNodes "Wan Image To Video SVIPro" + LoraLoaderModelOnly).
 - Every segment is conditioned on the start image (anchor, keeps the character) and on the last latent of the
   previous segment (keeps the motion going), so joints carry momentum instead of restarting from a still frame.
+- Every segment has an optional end image (front panel "End image (segment N)", "none" = skip): the pose that
+  segment ends on, placed on its last frame. Needs the I2V workflow with the end frame (tools/dasiwa_endframe.py)
+  and the DaSiWa end-frame node (custom_nodes/ComfyUI-DaSiWa-EndFrame).
 - Each decoded segment after the first starts by replaying the last 5 frames of the previous one; those are
   cross-faded over each other, then everything after the join is the same as the I2V workflow
   (color match, upscale, RTX upscale, interpolation, create video).
 """
 import copy, json, sys, uuid
+
+END_LINE = ("- **End image** (optional): the pose the clip ends on, e.g. the front view after a turn. "
+            "*none* = skip. Keep framing, background and style the same as the start image.\n")
 
 src, dst, N = sys.argv[1], sys.argv[2], int(sys.argv[3])
 assert 2 <= N <= 12
@@ -23,7 +29,8 @@ d = json.load(open(src, encoding="utf-8"))
 sg = d["definitions"]["subgraphs"][0]
 outer = [n for n in d["nodes"] if n["type"] == sg["id"]][0]
 assert not any(n["type"] == "DaSiWa_SeamlessLoop" for n in sg["nodes"]), "start from an I2V workflow"
-assert not any(n["type"] == "WanImageToVideoSVIPro" for n in sg["nodes"]), "already a Long workflow"
+assert not any(n["type"] in ("WanImageToVideoSVIPro", "DaSiWaSVIProEndFrame") for n in sg["nodes"]), "already a Long workflow"
+assert "end_image" in [i["name"] for i in sg["inputs"]], "run tools/dasiwa_endframe.py on the I2V workflow first"
 gguf = any(n["type"] == "UnetLoaderGGUF" for n in sg["nodes"])
 T = {n.get("title"): n for n in sg["nodes"]}
 L = {l["id"]: l for l in sg["links"]}
@@ -90,7 +97,7 @@ hi_load, lo_load = T["Load high-noise model"], T["Load low-noise model"]
 hi_s, lo_s = T["Sample high-noise steps"], T["Sample low-noise steps"]
 enc, neg, clip_ld, vae = T["Encode prompt"], T["Encode negative prompt"], T["Load text encoder"], T["Load VAE"]
 scale, size, old_lat, dec = T["Scale image to megapixels"], T["Get image width and height"], \
-    T["Build latent from start image"], T["Decode latent to frames"]
+    T["Build latent from start and end image"], T["Decode latent to frames"]
 cm = T["Match colors to start image"]
 frames = src_of(old_lat, "length")
 
@@ -110,19 +117,30 @@ lk(vae["id"], 0, anchor["id"], 1, "VAE")
 
 
 def svi(title, pos, pos_cond, prev):
-    n = node("WanImageToVideoSVIPro", title, pos, [380, 200],
-             [pin("positive", "CONDITIONING"), pin("negative", "CONDITIONING"), pin("length", "INT", True),
-              pin("anchor_samples", "LATENT"), pin("prev_samples", "LATENT", optional=True),
-              pin("motion_latent_count", "INT", True)],
+    n = node("DaSiWaSVIProEndFrame", title, pos, [380, 240],
+             [pin("positive", "CONDITIONING"), pin("negative", "CONDITIONING"), pin("vae", "VAE"),
+              pin("length", "INT", True), pin("anchor_samples", "LATENT"), pin("motion_latent_count", "INT", True),
+              pin("prev_samples", "LATENT", optional=True), pin("end_image", "IMAGE", optional=True)],
              [out("positive", "CONDITIONING"), out("negative", "CONDITIONING"), out("latent", "LATENT")],
-             {"length": 81, "motion_latent_count": 1}, cnr="comfyui-kjnodes")
+             {"length": 81, "motion_latent_count": 1})
+    n["properties"].pop("cnr_id")
+    n["properties"]["aux_id"] = "kuromatcha/mines-img2vid"
     lk(*pos_cond, n["id"], 0, "CONDITIONING")
     lk(neg["id"], 0, n["id"], 1, "CONDITIONING")
-    lk(*frames, n["id"], 2, "INT")
-    lk(anchor["id"], 0, n["id"], 3, "LATENT")
+    lk(vae["id"], 0, n["id"], 2, "VAE")
+    lk(*frames, n["id"], 3, "INT")
+    lk(anchor["id"], 0, n["id"], 4, "LATENT")
     if prev:
-        lk(prev, 0, n["id"], 4, "LATENT")
+        lk(prev, 0, n["id"], 6, "LATENT")
     return n
+
+
+def add_input(at, entry):
+    """Insert a subgraph input at slot `at`, moving the links of later inputs along."""
+    for l in sg["links"]:
+        if l["origin_id"] == -10 and l["origin_slot"] >= at:
+            l["origin_slot"] += 1
+    sg["inputs"].insert(at, entry)
 
 
 # 3. segment 1 replaces the plain I2V latent
@@ -130,6 +148,8 @@ s1 = svi("Build segment 1 latent (SVI)", old_lat["pos"], (enc["id"], 0), None)
 for k in range(3):
     retarget(old_lat["id"], k, s1["id"], k)
 drop_node(old_lat)
+end_slot = [i["name"] for i in sg["inputs"]].index("end_image")
+lk(-10, end_slot, s1["id"], 7, "IMAGE")
 if not any(l["origin_id"] == size["id"] for l in sg["links"]):
     drop_node(size)
 hi_s["title"], lo_s["title"] = "Sample high-noise steps (segment 1)", "Sample low-noise steps (segment 1)"
@@ -152,6 +172,11 @@ for k in range(2, N + 1):
     lk(clip_ld["id"], 0, e["id"], 0, "CLIP")
     lk(-10, text_slot + k - 1, e["id"], 1, "STRING")
     s = svi(f"Build segment {k} latent (SVI)", [x0, y0 + 250], (e["id"], 0), prev_low)
+    ename = f"end_image_{k + 8}"
+    add_input(end_slot + k - 1, {"id": str(uuid.uuid4()), "name": ename, "type": "IMAGE", "linkIds": [],
+                                 "localized_name": ename, "label": f"end image {k}", "shape": 7, "pos": [0, 0]})
+    lk(-10, end_slot + k - 1, s["id"], 7, "IMAGE")
+    text_slot += 1  # the end image input went in before the prompts
     samplers = []
     for base, first in ((hi_s, True), (lo_s, False)):
         n = copy.deepcopy(base)
@@ -208,7 +233,29 @@ for k in range(2, N + 1):
     outer["inputs"].insert(at + k - 2, {"label": f"prompt {k}", "name": name, "type": "STRING",
                                         "widget": {"name": name}, "link": None})
     vals[name] = ""
+loader = [n for n in d["nodes"] if n["type"] == "DaSiWaLoadImageOptional"][0]
+loader["title"] = "End image (segment 1)"
+ox = max(n["pos"][0] + n["size"][0] for n in d["nodes"]) + 40
+for k in range(2, N + 1):
+    ename = f"end_image_{k + 8}"
+    d["last_node_id"] += 1
+    d["last_link_id"] += 1
+    ld = copy.deepcopy(loader)
+    ld["id"], ld["title"] = d["last_node_id"], f"End image (segment {k})"
+    ld["pos"] = [ox + (k - 2) * (loader["size"][0] + 40), loader["pos"][1]]
+    ld["outputs"][0]["links"] = [d["last_link_id"]]
+    d["nodes"].append(ld)
+    outer["inputs"].insert([i["name"] for i in outer["inputs"]].index("end_image") + k - 1,
+                           {"localized_name": ename, "label": f"end image {k}", "name": ename, "type": "IMAGE",
+                            "shape": 7, "link": d["last_link_id"]})
+    d["links"].append([d["last_link_id"], ld["id"], 0, outer["id"], 0, "IMAGE"])
+for s_, i in enumerate(outer["inputs"]):
+    for l in d["links"]:
+        if l[3] == outer["id"] and l[0] == i.get("link"):
+            l[4] = s_
 for i in sg["inputs"] + outer["inputs"]:
+    if i["name"] == "end_image":
+        i["label"] = "end image 1"
     if i["name"] == "text":
         i["label"] = "prompt 1"
     if i["name"] == "value_1":
@@ -246,6 +293,8 @@ for a, b in (("## Prompt\n", f"## Prompts\n- One prompt per 5-second segment, {N
              ("- **duration (seconds)**: 5. Longer drifts.\n", "- **segment length (seconds)**: 5. Longer drifts.\n"),
              ("- Seed: random. To keep one: *Sample high-noise steps* → fixed.\n",
               "- Seeds: random. To keep one: *Sample high-noise steps (segment N)* → fixed.\n- SVI LoRA strength: *Apply SVI LoRA* nodes (1.0).\n"),
+             (END_LINE, "- **End image (segment N)** (optional): the pose that segment ends on. *none* = it ends "
+                        "freely and the next segment continues from there. Keep framing, background and style the same.\n"),
              ("1. Test: 0.3 MP, 3 s, extras off.\n", "1. Test: 0.3 MP, 3 s segments, extras off.\n")):
     assert g.count(a) == 1, a
     g = g.replace(a, b)
@@ -268,7 +317,7 @@ sg["state"]["lastLinkId"] = max(l["id"] for l in sg["links"])
 ids = {n["id"] for n in sg["nodes"]} | {-10, -20}
 assert all(l["origin_id"] in ids and l["target_id"] in ids for l in sg["links"])
 for n in sg["nodes"]:
-    if n["type"] in ("KSamplerAdvanced", "WanImageToVideoSVIPro", "VAEDecode", "ImageBatchExtendWithOverlap"):
+    if n["type"] in ("KSamplerAdvanced", "DaSiWaSVIProEndFrame", "VAEDecode", "ImageBatchExtendWithOverlap"):
         assert all(i["link"] is not None for i in n["inputs"] if i.get("shape") != 7 and not i.get("widget")), n["title"]
 open(dst, "w", encoding="utf-8").write(json.dumps(d, ensure_ascii=False))
 print(f"long workflow ({N} segments):", dst.replace("\\", "/").split("/")[-1])

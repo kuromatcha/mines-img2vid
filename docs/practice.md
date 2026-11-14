@@ -2,7 +2,7 @@
 
 **Workflow choice**
 
-- Loops → **DaSiWa Loop**. Anything that should end in a different pose → **DaSiWa I2V**.
+- Loops → **Mine's Loop**. Anything that should end in a different pose → **Mine's I2V**.
 - RTX 50-series → try **NVFP4** first (smaller, fits more of the model in VRAM). Keep the **GGUF** version as the fallback.
 
 **Before you render**

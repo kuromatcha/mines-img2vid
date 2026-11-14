@@ -32,7 +32,8 @@ HIGH = ("5 · High noise", [["Set shift (high)", "Apply NAG (high)", "Switch: NA
 LOW = ("6 · Low noise", [["Set shift (low)", "Apply NAG (low)", "Switch: NAG (low)",
                           "Sample low-noise steps", "Sample low-noise steps (segment 1)", "Decode segment 1"]])
 OUTPUT = [
-    ("Decode", [["Decode latent to frames", "Match colors to start image", "Make loop seamless"]]),
+    ("Decode", [["Decode latent to frames", "Decode latent to frames (tiled)", "Switch: tiled VAE decode",
+                 "Match colors to start image", "Make loop seamless"]]),
     ("Upscale", [["Load upscale model", "Upscale with model", "Switch: model upscale"],
                  ["Upscale with RTX VSR", "Switch: RTX upscale"]]),
     ("Interpolate", [["Interpolation multiplier", "Clamp multiplier to 2 or more", "Is multiplier above 1?"],
@@ -154,18 +155,26 @@ def layout(sg):
     return [(g["title"], g["bounding"][2], g["bounding"][3]) for g in groups]
 
 
+# Front panel: one row, every node the same height, widths and gaps on ComfyUI's 20 px snap grid.
+# Image loaders and the video player share one width, so the start image, end image(s) and the finished
+# video preview at the same size. Settings is wider and as tall as the row, which gives each prompt box
+# about 280 px (about 15 lines) on I2V and Loop.
+FRONT_H, FRONT_GAP = 960, 40
+FRONT_W = {"image": 480, "settings": 640, "video": 480, "guide": 560}
+
+
 def front(d, sg):
     outer = [n for n in d["nodes"] if n["type"] == sg["id"]][0]
     top = {n["type"]: n for n in d["nodes"]}
     start = top["LoadImage"]
     ends = sorted((n for n in d["nodes"] if n["type"] == "DaSiWaLoadImageOptional"), key=lambda n: n["title"])
+    row = [(n, "image") for n in [start] + ends] + [(outer, "settings"), (top["SaveVideo"], "video"),
+                                                   (top["MarkdownNote"], "guide")]
+    assert len(row) == len(d["nodes"]), "unplaced front-panel node"
     x = 0
-    for n in [start] + ends:  # one row: start image, end image(s), settings, video, Guide
-        n["pos"], n["size"] = [x, 0], [400, 560]
-        x += 400 + 40
-    outer["pos"], outer["size"] = [x, 0], [560, outer["size"][1]]
-    top["SaveVideo"]["pos"], top["SaveVideo"]["size"] = [x + 600, 0], [560, 640]
-    top["MarkdownNote"]["pos"] = [x + 1200, 0]
+    for n, kind in row:
+        n["pos"], n["size"] = [x, 0], [FRONT_W[kind], FRONT_H]
+        x += FRONT_W[kind] + FRONT_GAP
     d.get("extra", {}).pop("ds", None)
     return outer
 

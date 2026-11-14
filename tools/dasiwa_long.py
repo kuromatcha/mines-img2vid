@@ -279,7 +279,7 @@ outer["widgets_values_named"] = {n: vals[n] for n in wn}
 # 6. identity: new subgraph id, names, save prefix, guide
 new_id = str(uuid.uuid4())
 sg["id"] = outer["type"] = new_id
-sg["name"] = f"Long Video (DaSiWa v11 {'GGUF' if gguf else 'NVFP4'} SVI, {N} segments)"
+sg["name"] = f"Mine's Long {'GGUF' if gguf else 'NVFP4'}"
 d["id"] = str(uuid.uuid4())
 for n in d["nodes"]:
     if n["type"] == "SaveVideo":

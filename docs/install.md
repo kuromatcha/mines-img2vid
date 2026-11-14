@@ -22,7 +22,7 @@ Install with ComfyUI-Manager ("Install Custom Nodes") or `git clone` into `Comfy
 | Pack | Needed for | Source |
 |---|---|---|
 | **ComfyUI-GGUF** | GGUF model loader (GGUF workflows) | https://github.com/city96/ComfyUI-GGUF |
-| **ComfyUI-DaSiWa-Nodes** | `Seamless Loop` node (loop workflows), `RTX Upscaler & Refiner` node (optional RTX upscale, all 4 workflows) | https://github.com/darksidewalker/ComfyUI-DaSiWa-Nodes |
+| **ComfyUI-DaSiWa-Nodes** | `Seamless Loop` node (loop workflows), `RTX Upscaler & Refiner` node (optional RTX upscale, all workflows) | https://github.com/darksidewalker/ComfyUI-DaSiWa-Nodes |
 | **ComfyUI-DaSiWa-EndFrame** | `Load Image (optional)` (end image, I2V and Long workflows); `Wan Image To Video SVIPro (end frame)` (Long workflows); on Windows also hides the harmless WinError 10054 console traceback ([troubleshooting](troubleshooting.md)) | this repository, [`custom_nodes/`](../custom_nodes) — copy the `ComfyUI-DaSiWa-EndFrame` folder into `ComfyUI/custom_nodes/` |
 | **ComfyUI-KJNodes** | `Wan Chunk FeedForward` node (optional FFN chunking, all workflows); `Wan Image To Video SVIPro` and `Image Batch Extend With Overlap` (Long workflows); `Model Patch Torch Settings` (GGUF fix) | https://github.com/kijai/ComfyUI-KJNodes |
 

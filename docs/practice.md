@@ -31,6 +31,7 @@ The developer's prompt guide (from ComfyUI-DaSiWa-Nodes, `data/llm_skills/wan.md
 From testing these workflows:
 
 - The model follows the prompt more than the negative prompt.
+- For a camera move (push-in, pan), put the camera line **first**. Placed third, as in the guide above, it was ignored in testing, and the camera move costs body motion ([tests](camera-tests.md)).
 - To keep the mouth still, say it in the prompt: *"closed-mouth smile, lips stay closed and still, no talking"*. Avoid phrases like "smile widens". If the mouth still moves, turn **negative** on.
 - For loops, describe a repeating motion that *"ends in the same pose it started in"*. Subtle, cyclic motion loops best.
 - Detailed, soft-rendered illustration keeps its look best at **0.6 MP or higher**. Below that, fine lines blur.

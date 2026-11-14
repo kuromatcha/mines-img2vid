@@ -23,9 +23,9 @@ Values in **bold** are the defaults in these workflows. The setting names match 
 
 - *Sample high-noise steps → noise seed*: random on every run (*control after generate* = randomize). Set a number and switch to *fixed* to repeat a result or to compare settings.
 - Model files are picked on the loader nodes: *Load high-noise model*, *Load low-noise model*, *Load text encoder*, *Load VAE*, *Load upscale model* (**2x-AnimeSharpV4_RCAN**), *Load interpolation model* (**rife_v4.26**).
-- *Total steps*: **4** and *Split step*: **2** (dev: 4 steps for the distilled model, split at half).
+- *Total steps*: **4** and *Split step*: **2** (dev: 4 steps for the distilled model, split at half). Tested: 6 steps split at 3 took about 30% longer with no visible gain.
 - *CFG*: **1** (dev: 1–1.5). 1 is fastest and ignores the negative prompt.
-- *Sample high-noise steps* and *Sample low-noise steps* → sampler / scheduler: **euler / simple** (dev: always works; euler/linear_quadratic or uni_pc_bh2/simple as alternatives). Change both.
+- *Sample high-noise steps* and *Sample low-noise steps* → sampler / scheduler: **euler / simple** (dev: always works; euler/linear_quadratic or uni_pc_bh2/simple as alternatives). Change both. Tested on Loop: uni_pc_bh2/simple looked the same as euler/simple; euler/linear_quadratic was a little sharper but left a visible jump at the loop point, drifted more in color and opened the mouth wider.
 - *Apply NAG (high)* and *Apply NAG (low)* → nag_scale: **11** (dev).
 - *Switch: NAG (low)*: **off**. Turn on to apply NAG in the low-noise steps too (full NAG, about 2× the sampling time), if the mouth still opens or shows teeth with **negative** on.
 - *Scale to megapixels → resolution_steps*: **16** (closest to the image's shape) or **32** (the developer's Div32).

@@ -3,7 +3,7 @@
 **Workflow choice**
 
 - Loops → **Mine's Loop**. Anything that should end in a different pose → **Mine's I2V**.
-- RTX 50-series → try **NVFP4** first (smaller, fits more of the model in VRAM). Keep the **GGUF** version as the fallback.
+- RTX 50-series → use **NVFP4**: about twice as fast as GGUF, with slightly softer fine detail (see *Measured speed*). Use **GGUF** on other cards, or for a final render where the last bit of detail matters.
 
 **Before you render**
 
@@ -42,12 +42,11 @@ From testing these workflows:
 
 ## Measured speed
 
-Test PC: RTX 5070 Ti 16 GB, 32 GB RAM, Q6_K GGUF, 5 s at 16 fps.
+Test PC: RTX 5070 Ti 16 GB, 32 GB RAM. Loop workflow, 640×976 (0.6 MP), 5 s at 16 fps, color match on, other extras off, default sampling (4 steps, euler / simple). Times are for a full run after a warm-up run, so the models had already been loaded once.
 
-| Size | Time per video | Seconds per step |
+| Model | One 5 s loop | Per sampling step |
 |---|---|---|
-| 608×880 (≈0.54 MP) | ~3.1 min | ~32 s |
-| 640×928 (≈0.6 MP) | — | ~29 s |
-| 704×1024 (≈0.72 MP) | ~4.8 min | ~51 s |
+| NVFP4 | **71 s** | about 12.6 s |
+| GGUF Q6_K | **150 s** | about 24–29 s |
 
-These were measured before Comfy Kitchen attention and fp16 accumulation were added. NVFP4 was not measured yet.
+GGUF spends about 25–40 s of each run moving its larger model in and out of video memory. With the same seed, NVFP4 moved slightly more and kept the loop just as seamless, with about 8% less fine detail (hard to see in playback).

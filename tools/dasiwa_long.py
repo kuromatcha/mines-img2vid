@@ -101,29 +101,6 @@ scale, size, old_lat, dec = T["Scale image to megapixels"], T["Get image width a
 cm = T["Match colors to start image"]
 frames = src_of(old_lat, "length")
 
-# 0. the I2V tiled VAE decode toggle (dasiwa_tiledvae.py) covers one decoder; Long decodes per segment, so it goes
-if "Switch: tiled VAE decode" in T:
-    retarget(T["Switch: tiled VAE decode"]["id"], 0, dec["id"], 0)
-    drop_node(T["Decode latent to frames (tiled)"])
-    drop_node(T["Switch: tiled VAE decode"])
-    at = [i["name"] for i in sg["inputs"]].index("tiled_on")
-    sg["inputs"].pop(at)
-    for l in sg["links"]:
-        if l["origin_id"] == -10 and l["origin_slot"] > at:
-            l["origin_slot"] -= 1
-    wn = [i["name"] for i in outer["inputs"] if i.get("widget")]
-    vals = dict(zip(wn, outer["widgets_values"]))
-    oat = [i["name"] for i in outer["inputs"]].index("tiled_on")
-    outer["inputs"].pop(oat)
-    for l in d["links"]:
-        if l[3] == outer["id"] and l[4] > oat:
-            l[4] -= 1
-    outer["widgets_values"] = [vals[i["name"]] for i in outer["inputs"] if i.get("widget")]
-    note = [n for n in d["nodes"] if n["type"] == "MarkdownNote"][0]
-    note["widgets_values"][0] = "".join(l for l in note["widgets_values"][0].splitlines(True)
-                                        if not l.startswith("- **tiled VAE decode**"))
-    T = {n.get("title"): n for n in sg["nodes"]}
-
 # 1. SVI LoRAs right after the model loaders
 for ld, lora, x in ((hi_load, HIGH, "high"), (lo_load, LOW, "low")):
     n = node("LoraLoaderModelOnly", f"Apply SVI LoRA ({x})", [ld["pos"][0] + 410, ld["pos"][1] + 1240], [380, 110],

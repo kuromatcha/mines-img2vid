@@ -14,7 +14,7 @@ Values in **bold** are the defaults in these workflows. The setting names match 
 | shift | **5** | dev: 5, valid 5–10. Sets both *Set shift* nodes (high and low) inside the subgraph. Higher spends more of the steps on the overall shape: bigger motion and layout changes. Lower keeps closer to the start image. |
 | FFN chunking | **off** | dev default off. Splits the model's feed-forward step to cut peak VRAM. **Turn on for 0.7 MP and above on 16 GB cards** (0.8 MP ran out of VRAM without it). Slightly slower; marked experimental. Chunk count (4) is set inside the subgraph. |
 | tiled VAE decode | **off** | Decodes the finished video in overlapping tiles and frame windows instead of in one pass. Cuts the VRAM peak at the decode step; a little slower. Turn on if a run fails with out-of-memory after sampling has finished (0.8 MP and up). The developer's workflow has the same switch, default off. Tile sizes are inside the subgraph (*Decode latent to frames (tiled)*: 512 / 64 / 64 / 8). |
-| color match strength | **0.75** loop · **0** I2V | dev: 0.75 when used. Keep it on for loops (stops the washed-out end and the flash at the loop point). |
+| color match strength | **0.5** | Mode is **uniform** (inside the subgraph, *Match colors to start image*): one correction for the whole clip, worked out from all its frames. It fixes the lifted, washed-out blacks but keeps natural light changes during the motion. The old per-frame 0.75 locked every frame to the start image's brightness and pushed contrast a bit past it, which looked harsh. Keep it on for loops (stops the flash at the loop point); 0 turns it off. |
 | model upscale | **off** | AnimeSharpV4 doubles each side. Slow; sharpens line art, can harden soft shading. |
 | RTX upscale | **off** | NVIDIA RTX Video Super Resolution doubles each side. Fast and mild. When on it is used *instead of* the upscale model. Needs `nvidia-vfx` (see [install](install.md)). Mode, quality and scale are inside the subgraph (*RTX upscale* node: High Bitrate / Ultra / 2.0). High Bitrate suits the clean decoded frames; *VSR* mode is meant for compressed video and sharpens edges and blocks into visible noise here. |
 | interpolation multiplier | **1 (off)** | 2 = double fps with RIFE (built-in ComfyUI node, `rife_v4.26`). At 1 the step is skipped entirely. Loops stay seamless when interpolated. Leave at 1 while testing. |
@@ -40,7 +40,7 @@ Same settings as I2V, plus:
 | prompt 1, prompt 2, … | your text | One prompt per segment. Describe only that segment's motion; repeat camera and scene in each. The next segment continues from where the last one ended. |
 | end image 1, end image 2, … | **none** | Optional end pose for each segment. A segment at **none** ends freely; either way the next segment continues from the last frames of the one before. |
 | segment length (seconds) | **5** | Length of each segment. Keep 5 (81 frames); longer segments wash out colors. |
-| color match strength | **0.75** | Higher than in I2V on purpose: without it, a 4-segment test lost 25% contrast and 16% saturation by the last segment; at 0.75 the loss was 6% and 4%. |
+| color match strength | **0.75**, per frame | Stronger than in I2V and Loop, and matched per frame, on purpose: contrast fades segment by segment, and only per-frame matching pulls each part back. Without it, a 4-segment test lost 25% contrast and 16% saturation by the last segment; at 0.75 the loss was 6% and 4%. In a 2-segment test, uniform 0.5 let the end fade to 86% contrast, against 95% with per-frame 0.75. |
 
 **Inside the subgraph:**
 

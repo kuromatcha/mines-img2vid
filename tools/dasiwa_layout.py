@@ -4,15 +4,22 @@ Usage: python -I tools/dasiwa_layout.py <workflow> [<workflow> ...]
 
 - Front panel: a "shift" setting (after fps) drives both Set shift nodes, high and low, which must match.
 - Subgraph: every node is placed by its title into a group of tidy columns (data flows left to right),
-  one group per stage, each group sized to its own nodes. Long workflows get one group per extra segment.
+  one group per stage. Rows line up across a group's columns, all groups share one bottom edge, and
+  everything sits on the 20 px snap grid. Long workflows get one group per extra segment.
   Fails if a node has no place, so new nodes cannot end up stacked on top of others.
 - Top level: one top-aligned row: start image, end image(s), settings, video, Guide.
 Wiring is checked before and after: only the new shift links are added. Run it last; safe to run again.
 """
 import json, re, sys, uuid
 
-GAP_COL, GAP_GROUP, GAP_NODE, TITLE_H, PAD, HEADER = 30, 80, 24, 30, 20, 46
+# Positions and sizes sit on ComfyUI's 20 px snap grid (title bar 30 + gap 30 = 60 between stacked nodes),
+# so a node dragged by hand snaps back into line.
+GAP_COL, GAP_GROUP, GAP_NODE, TITLE_H, PAD, HEADER = 40, 80, 30, 30, 20, 50
 W = 380
+
+
+def snap(v, grid=20):
+    return -(-int(round(v)) // grid) * grid
 
 MODELS = ("1 · Models", [
     ["Load high-noise model", "Load low-noise model", "Load text encoder", "Load VAE"],
@@ -39,6 +46,7 @@ OUTPUT = [
                      ["Load interpolation model", "Interpolate frames", "Switch: interpolation"]]),
     ("Video", [["Count frames", "Subtract 1 from frame count", "Remove repeated first frame", "Create video"]]),
 ]
+STACK = ("Upscale",)  # groups whose columns are separate paths: no row alignment
 
 
 def segment(k):
@@ -124,29 +132,38 @@ def layout(sg):
 
     x, y0, groups = 0, 0, []
     for gtitle, cols in plan:
-        gx, bottom, used = x, y0, False
-        for col in cols:
-            col = [nodes[t] for t in col if t in nodes]
-            if not col:
-                continue
-            used = True
-            width = max([W] + [n["size"][0] for n in col])
-            y = y0
-            for n in col:
-                n["pos"] = [x, y]
-                n["size"] = [width, n["size"][1]]
-                n.get("flags", {}).pop("collapsed", None)
-                y += n["size"][1] + TITLE_H + GAP_NODE
-            bottom = max(bottom, y - GAP_NODE)
-            x += width + GAP_COL
-        if not used:
+        cols = [[nodes[t] for t in col if t in nodes] for col in cols]
+        cols = [c for c in cols if c]
+        if not cols:
             continue
+        for c in cols:
+            for n in c:
+                n.get("flags", {}).pop("collapsed", None)
+                n["size"] = [snap(n["size"][0]), snap(n["size"][1])]
+        # rows line up across the columns of a group (each row as tall as its tallest node), except in groups
+        # whose columns are separate paths, where one tall node would push the other column far down
+        if gtitle.endswith(STACK):
+            tops = [[y0 + sum(n["size"][1] for n in c[:r]) + r * (TITLE_H + GAP_NODE) for r in range(len(c))]
+                    for c in cols]
+        else:
+            heights = [max(c[r]["size"][1] for c in cols if r < len(c)) for r in range(max(map(len, cols)))]
+            tops = [[y0 + sum(heights[:r]) + r * (TITLE_H + GAP_NODE) for r in range(len(c))] for c in cols]
+        gx, bottom = x, y0
+        for c, ct in zip(cols, tops):
+            width = max([W] + [n["size"][0] for n in c])
+            for n, top in zip(c, ct):
+                n["pos"], n["size"] = [x, top], [width, n["size"][1]]
+                bottom = max(bottom, top + n["size"][1])
+            x += width + GAP_COL
         right = x - GAP_COL
         groups.append({"id": len(groups) + 1, "title": gtitle,
                        "bounding": [gx - PAD, y0 - TITLE_H - HEADER, right - gx + 2 * PAD,
                                     bottom - y0 + TITLE_H + HEADER + PAD],
                        "color": "#3f789e", "font_size": 24, "flags": {}})
         x = right + GAP_GROUP
+    tallest = max(g["bounding"][3] for g in groups)  # one even bottom edge for all groups
+    for g in groups:
+        g["bounding"][3] = tallest
     sg["groups"] = groups
     sg["state"]["lastGroupId"] = len(groups)
     sg["inputNode"]["bounding"] = [-PAD - 60 - 300, y0, 300, sg["inputNode"]["bounding"][3]]

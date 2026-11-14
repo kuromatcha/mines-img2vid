@@ -4,6 +4,8 @@
   optional image (Wan First-Last-Frame to Video, Wan SVIPro end frame) simply skips it.
 - Wan Image To Video SVIPro (end frame): KJNodes' Wan Image To Video SVIPro, plus an optional end image that is
   placed on the last frame the same way the core Wan First-Last-Frame to Video node does it.
+- On Windows, hides the harmless WinError 10054 traceback that ComfyUI's server loop logs when a browser tab
+  closes or refreshes (see _quiet_socket_reset).
 """
 import torch
 
@@ -97,6 +99,37 @@ class DaSiWaSVIProEndFrame:
         negative = node_helpers.conditioning_set_values(negative, {"concat_latent_image": image_cond_latent, "concat_mask": mask})
         return (positive, negative, {"samples": empty_latent})
 
+
+def _quiet_socket_reset():
+    """Windows only: drop the harmless 'ConnectionResetError [WinError 10054]' traceback that asyncio logs at ERROR
+    when a browser tab closes or refreshes (Proactor _call_connection_lost, cpython#83413, Comfy-Org/ComfyUI#15163).
+    Every other loop exception still goes to the previous handler."""
+    import asyncio
+    import sys
+    if sys.platform != "win32":
+        return
+    try:
+        loop = asyncio.get_event_loop()  # ComfyUI's server loop: custom nodes are imported while it runs
+    except RuntimeError:
+        return
+    previous = loop.get_exception_handler()
+    if getattr(previous, "_dasiwa_quiet_reset", False):
+        return
+
+    def handler(loop, context):
+        if isinstance(context.get("exception"), ConnectionResetError) and \
+                "_call_connection_lost" in repr(context.get("handle", "")) + str(context.get("message", "")):
+            return
+        if previous is not None:
+            previous(loop, context)
+        else:
+            loop.default_exception_handler(context)
+
+    handler._dasiwa_quiet_reset = True
+    loop.set_exception_handler(handler)
+
+
+_quiet_socket_reset()
 
 NODE_CLASS_MAPPINGS = {
     "DaSiWaLoadImageOptional": DaSiWaLoadImageOptional,

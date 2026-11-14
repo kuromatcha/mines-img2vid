@@ -24,6 +24,6 @@ ComfyUI image-to-video workflows for **DaSiWa WAN 2.2 I2V 14B v11**, set up with
 - [Recommended practice](docs/practice.md): test-then-render routine, prompting tips, measured speed
 - [Troubleshooting](docs/troubleshooting.md): out-of-memory, loop flash, mouth movement, missing nodes
 - [Camera and motion tests](docs/camera-tests.md): why the camera stays still, getting more motion, what was tried and dropped
-- [Tools](tools/README.md): the scripts that built the workflows
+- [Tools](tools/README.md): build a Long workflow with more segments, tidy the layout
 
 Model files are not included (DaSiWa may not be redistributed).

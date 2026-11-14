@@ -6,7 +6,7 @@ Usage: python -I tools/dasiwa_long.py <finished I2V workflow> <output workflow> 
 - Every segment is conditioned on the start image (anchor, keeps the character) and on the last latent of the
   previous segment (keeps the motion going), so joints carry momentum instead of restarting from a still frame.
 - Every segment has an optional end image (front panel "End image (segment N)", "none" = skip): the pose that
-  segment ends on, placed on its last frame. Needs the I2V workflow with the end frame (tools/dasiwa_endframe.py)
+  segment ends on, placed on its last frame. Needs an I2V workflow from workflows/ (it has the end image input)
   and the DaSiWa end-frame node (custom_nodes/ComfyUI-DaSiWa-EndFrame).
 - Each decoded segment after the first starts by replaying the last 5 frames of the previous one; those are
   cross-faded over each other, then everything after the join is the same as the I2V workflow
@@ -30,7 +30,7 @@ sg = d["definitions"]["subgraphs"][0]
 outer = [n for n in d["nodes"] if n["type"] == sg["id"]][0]
 assert not any(n["type"] == "DaSiWa_SeamlessLoop" for n in sg["nodes"]), "start from an I2V workflow"
 assert not any(n["type"] in ("WanImageToVideoSVIPro", "DaSiWaSVIProEndFrame") for n in sg["nodes"]), "already a Long workflow"
-assert "end_image" in [i["name"] for i in sg["inputs"]], "run tools/dasiwa_endframe.py on the I2V workflow first"
+assert "end_image" in [i["name"] for i in sg["inputs"]], "start from an I2V workflow from workflows/ (it needs the end image input)"
 gguf = any(n["type"] == "UnetLoaderGGUF" for n in sg["nodes"])
 T = {n.get("title"): n for n in sg["nodes"]}
 L = {l["id"]: l for l in sg["links"]}
@@ -100,6 +100,29 @@ scale, size, old_lat, dec = T["Scale image to megapixels"], T["Get image width a
     T["Build latent from start and end image"], T["Decode latent to frames"]
 cm = T["Match colors to start image"]
 frames = src_of(old_lat, "length")
+
+# 0. the I2V tiled VAE decode toggle (dasiwa_tiledvae.py) covers one decoder; Long decodes per segment, so it goes
+if "Switch: tiled VAE decode" in T:
+    retarget(T["Switch: tiled VAE decode"]["id"], 0, dec["id"], 0)
+    drop_node(T["Decode latent to frames (tiled)"])
+    drop_node(T["Switch: tiled VAE decode"])
+    at = [i["name"] for i in sg["inputs"]].index("tiled_on")
+    sg["inputs"].pop(at)
+    for l in sg["links"]:
+        if l["origin_id"] == -10 and l["origin_slot"] > at:
+            l["origin_slot"] -= 1
+    wn = [i["name"] for i in outer["inputs"] if i.get("widget")]
+    vals = dict(zip(wn, outer["widgets_values"]))
+    oat = [i["name"] for i in outer["inputs"]].index("tiled_on")
+    outer["inputs"].pop(oat)
+    for l in d["links"]:
+        if l[3] == outer["id"] and l[4] > oat:
+            l[4] -= 1
+    outer["widgets_values"] = [vals[i["name"]] for i in outer["inputs"] if i.get("widget")]
+    note = [n for n in d["nodes"] if n["type"] == "MarkdownNote"][0]
+    note["widgets_values"][0] = "".join(l for l in note["widgets_values"][0].splitlines(True)
+                                        if not l.startswith("- **tiled VAE decode**"))
+    T = {n.get("title"): n for n in sg["nodes"]}
 
 # 1. SVI LoRAs right after the model loaders
 for ld, lora, x in ((hi_load, HIGH, "high"), (lo_load, LOW, "low")):

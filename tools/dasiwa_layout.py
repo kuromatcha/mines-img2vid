@@ -1,4 +1,4 @@
-"""Layout pass and front-panel shift for all DaSiWa workflows (I2V, Loop, Long; NVFP4 and GGUF).
+"""Layout pass for all workflows (I2V, Loop, Long; GGUF and NVFP4).
 
 Usage: python -I tools/dasiwa_layout.py <workflow> [<workflow> ...]
 

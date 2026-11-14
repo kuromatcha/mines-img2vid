@@ -11,6 +11,7 @@ Values in **bold** are the defaults in these workflows. The setting names match 
 | megapixels | **0.6** | **0.3** smoke test · **0.6** baseline · **0.8** HD (dev range 0.52–0.83). Keeps the image's shape, any ratio. |
 | duration (seconds) | **5** | dev: **5 s at 16 fps** (or 3 s at 24 fps) is Wan 2.2's native length; longer clips drift and wash out. |
 | fps | **16** | dev: 16, or 24 for faster motion. 12 looks choppy. |
+| shift | **5** | dev: 5, valid 5–10. Sets both *Set shift* nodes (high and low) inside the subgraph. Higher spends more of the steps on the overall shape: bigger motion and layout changes. Lower keeps closer to the start image. |
 | FFN chunking | **off** | dev default off. Splits the model's feed-forward step to cut peak VRAM. **Turn on for 0.7 MP and above on 16 GB cards** (0.8 MP ran out of VRAM without it). Slightly slower; marked experimental. Chunk count (4) is set inside the subgraph. |
 | color match strength | **0.75** loop · **0** I2V | dev: 0.75 when used. Keep it on for loops (stops the washed-out end and the flash at the loop point). |
 | model upscale | **off** | AnimeSharpV4 doubles each side. Slow; sharpens line art, can harden soft shading. |
@@ -23,7 +24,6 @@ Values in **bold** are the defaults in these workflows. The setting names match 
 - Model files are picked on the loader nodes: *Load high-noise model*, *Load low-noise model*, *Load text encoder*, *Load VAE*, *Load upscale model* (**2x-AnimeSharpV4_RCAN**), *Load interpolation model* (**rife_v4.26**).
 - *Total steps*: **4** and *Split step*: **2** (dev: 4 steps for the distilled model, split at half).
 - *CFG*: **1** (dev: 1–1.5). 1 is fastest and ignores the negative prompt.
-- *Set shift (high)* and *Set shift (low)*: **5** (dev: 5, valid 5–10). Change both.
 - *Sample high-noise steps* and *Sample low-noise steps* → sampler / scheduler: **euler / simple** (dev: always works; euler/linear_quadratic or uni_pc_bh2/simple as alternatives). Change both.
 - *Apply NAG (high)* and *Apply NAG (low)* → nag_scale: **11** (dev).
 - *Switch: NAG (low)*: **off**. Turn on to apply NAG in the low-noise steps too (full NAG, about 2× the sampling time), if the mouth still opens or shows teeth with **negative** on.

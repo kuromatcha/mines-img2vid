@@ -28,6 +28,8 @@ Use the NVFP4 I2V workflow to get the NVFP4 Long workflow. The output file is ov
 
 Places every node inside the subgraph by its title, one group per stage (Models, Input, Timing, Sampling, High noise, Low noise, Segment N, Decode, Upscale, Interpolate, Video). On the front, it puts the image loaders, settings, video and Guide in one row, all 960 px tall on the 20 px snap grid (images and video 480 wide, settings 640, Guide 560). It checks that the wiring is unchanged, and stops if a node has no place. Safe to run any number of times.
 
+It only knows the WAN workflows' node titles: do not run it on **Mine's Ref2VA W4A8** (MiniMax H3), which was laid out by its own generator with the same spacing rules.
+
 ```
 python -I tools/dasiwa_layout.py "workflows/Mine's Loop GGUF.json"
 ```

@@ -24,7 +24,7 @@ Install with ComfyUI-Manager ("Install Custom Nodes") or `git clone` into `Comfy
 | **ComfyUI-GGUF** | GGUF model loader (GGUF workflows) | https://github.com/city96/ComfyUI-GGUF |
 | **ComfyUI-DaSiWa-Nodes** | `Seamless Loop` node (loop workflows), `RTX Upscaler & Refiner` node (optional RTX upscale, all workflows) | https://github.com/darksidewalker/ComfyUI-DaSiWa-Nodes |
 | **ComfyUI-DaSiWa-EndFrame** | `Load Image (optional)` (end image, I2V and Long workflows); `Wan Image To Video SVIPro (end frame)` (Long workflows); on Windows also hides the harmless WinError 10054 console traceback ([troubleshooting](troubleshooting.md)) | this repository, [`custom_nodes/`](../custom_nodes) — copy the `ComfyUI-DaSiWa-EndFrame` folder into `ComfyUI/custom_nodes/` |
-| **ComfyUI-KJNodes** | `Wan Chunk FeedForward` node (optional FFN chunking, all workflows); `Wan Image To Video SVIPro` and `Image Batch Extend With Overlap` (Long workflows); `Model Patch Torch Settings` (GGUF fix) | https://github.com/kijai/ComfyUI-KJNodes |
+| **ComfyUI-KJNodes** | `Wan Chunk FeedForward` node (optional FFN chunking, all workflows) and `MiniMax Chunk FeedForward` (Ref2VA workflow); `Wan Image To Video SVIPro` and `Image Batch Extend With Overlap` (Long workflows); `Model Patch Torch Settings` (GGUF fix) | https://github.com/kijai/ComfyUI-KJNodes |
 
 ComfyUI-DaSiWa-Nodes lists heavy extras in its `requirements.txt` (LLM, RTX, AMD tools). **Seamless Loop does not need them.** The pack loads without installing them; they only load when you use those other nodes. If an installer insists, skipping `llama-cpp-python` is fine (it often fails to build on Windows).
 
@@ -54,6 +54,22 @@ All paths are inside `ComfyUI/models/` (or your shared models folder).
 | `loras/` | `SVI_v2_PRO_Wan2.2-I2V-A14B_HIGH_lora_rank_128_fp16.safetensors` | 1.23 GB | [Kijai/WanVideo_comfy](https://huggingface.co/Kijai/WanVideo_comfy/tree/main/LoRAs/Stable-Video-Infinity/v2.0) → `LoRAs/Stable-Video-Infinity/v2.0/` *(Long workflows)* |
 | `loras/` | `SVI_v2_PRO_Wan2.2-I2V-A14B_LOW_lora_rank_128_fp16.safetensors` | 1.23 GB | same |
 | `upscale_models/` | `2x-AnimeSharpV4_RCAN.safetensors` | 31 MB | [Kim2091/2x-AnimeSharpV4](https://huggingface.co/Kim2091/2x-AnimeSharpV4) *(optional upscale)* |
+
+### Ref2VA workflow (MiniMax H3)
+
+**Mine's Ref2VA W4A8** uses a different model family. It needs ComfyUI 0.45.3 or newer with the native MiniMax H3 and RelayVSR nodes, plus the KJNodes, DaSiWa-EndFrame and DaSiWa-Nodes packs above (it uses `MiniMax Chunk FeedForward`, `Load Image (optional)` and the RTX upscaler). No NVFP4 card is needed. The model plus the text encoder are about 28 GB, so on 32 GB of RAM it relies on the page file and the first run is slow.
+
+| Folder | File | Size | Source |
+|---|---|---|---|
+| `diffusion_models/` | `dasiwa_minimax_h3_ref2va_v5xs_pruned_graviton_turbo_w4a8.safetensors` | 12.25 GB | [Civitai: DaSiWa MiniMax H3](https://civitai.com/models/2877206), version "DaSiWa GXS v5 Turbo MiniMax H3" (needs a Civitai login) |
+| `text_encoders/` | `qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors` | 15.69 GB | [Comfy-Org/MiniMax-H3](https://huggingface.co/Comfy-Org/MiniMax-H3) → `text_encoders/` |
+| `vae/` | `minimax_h3_video_vae_int8_convrot.safetensors` | 2.81 GB | [Kijai/MiniMax-H3-experimental](https://huggingface.co/Kijai/MiniMax-H3-experimental) |
+| `vae/` | `minimax_h3_audio_vae_fp32.safetensors` | 0.6 GB | [Comfy-Org/MiniMax-H3](https://huggingface.co/Comfy-Org/MiniMax-H3) → `vae/` |
+| `diffusion_models/` | `relayvsr_x2_lightx2v_int8_convrot.safetensors` | 5.16 GB | [Comfy-Org/RelayVSR](https://huggingface.co/Comfy-Org/RelayVSR) → `diffusion_models/` *(RelayVSR 2x)* |
+| `vae/` | `relayvsr_flash_vae_x2_fp32.safetensors` | 0.13 GB | same → `vae/` *(RelayVSR 2x)* |
+| `frame_interpolation/` | `rife_v4.26.safetensors` | 23 MB | same as above *(interpolation)* |
+
+The RelayVSR files are only used when **RelayVSR 2x** is on, the RIFE file when **interpolate** is above 1, but ComfyUI lists them as missing at load while they are absent, because the loader nodes are in the graph.
 
 **Gated DaSiWa repo:** log in to Hugging Face, open the repo page and accept the access request. Then either download in the browser, or log in once from a terminal with ComfyUI's Python and download from there:
 

@@ -48,3 +48,24 @@ Same settings as I2V, plus:
 - *Join segment N*: overlap **5**. A new segment starts by replaying the last 5 frames of the previous one; the two copies are cross-faded, so each extra segment adds 76 new frames (4.75 s).
 - *Sample high-noise steps (segment N)*: each segment has its own seed.
 - More segments: rebuild with `tools/dasiwa_long.py` (see [Tools](../tools/README.md)).
+
+## Ref2VA workflow (MiniMax H3)
+
+**Mine's Ref2VA W4A8** makes a video with sound from up to 3 reference images, with the DaSiWa GXS v5 Turbo model (W4A8 build). Models: [install](install.md#ref2va-workflow-minimax-h3). It has not been rendered end to end yet; the values below are the developer's and the model's own.
+
+| Setting | Default | Suggestion |
+|---|---|---|
+| reference 1, 2, 3 | 1 required, 2 and 3 **none** | Reference 1 sets the aspect ratio and is `<Picture 1>` in the prompt. Numbers follow the slots that are filled: with only 1 and 3, reference 3 is `<Picture 2>`. A reference can be a character, a place, a style or a pose, not only a first frame. |
+| prompt | example prompt | Six sections, each a heading followed by text: `subject_definitions`, `summary` (starts with *reference generation.*), `retention_analysis` (`fully_preserved`, `partially_preserved`, `attribute_transfer`, `weak_reference`), `detailed_description` (`[Shot 1]`, a later cut as `[Shot 2] At 00:03.000 …`), `overall_soundscape` (dialogue in quotes) and `non_diegetic_music` (or *N/A*). If the prompt does not say what to keep, the model invents a background: name it as a subject and list it as `fully_preserved`, in one short line. Long lists of things not to show can make them appear. |
+| megapixels | **0.6** | **0.3** test · **0.6** normal · **0.8** high. Trained around 0.8 (native: 768 px short edge, capped near 1 MP). Turn FFN chunking on from about 0.7 MP. |
+| duration (seconds) | **5** | Trained on 5–15 s. The frame count is rounded up to a multiple of 17, plus 5. |
+| fps | **24** | Keep 24: the model is trained at 24 fps, and changing it changes the frame count and the speed of the motion. |
+| interpolate | **1 (off)** | 2 doubles the fps with RIFE (48 fps). |
+| steps | **6** | 4 fast preview (rough audio) · 6 basic · 8 quality. For the non-turbo build (`…ref2va_v5xs_pruned_graviton_w4a8`): 20–25 steps, sampler *res_multistep*, shift 10–12. |
+| shift | **8** | Video shift, turbo range 6–12. The audio shift is fixed at 4 (*Set shift*, inside the subgraph). |
+| FFN chunking | **off** | Less VRAM, slower. On from about 0.7 MP. |
+| RelayVSR 2x | **off** | 2× video upscale trained on H3 clips, one sampling step; only every 15th frame goes through the model. Output is 2× per side. |
+| RTX 2x | **off** | 2× RTX Video Super Resolution (needs `nvidia-vfx`, see [install](install.md)). Fast and mild; overrides RelayVSR 2x if both are on. |
+| mute audio | **off** | Saves the video without a sound track; the audio is not decoded at all. |
+
+**Inside the subgraph:** *Sampler* **euler** / *Scheduler* **simple**, CFG 1, no negative prompt (turbo model; for the non-turbo model set *Sampler* to res_multistep). *Seed* is random; set *fixed* to keep one. Reference size in *Build conditioning from references*: **match** (*max* keeps the identity sharper but is much slower). Model files are picked on the *Load …* nodes. Routine: test at 0.3 MP, 5 s, 4 steps with the extras off; rerun until the motion is right, fix the seed; then render at 0.6 MP and 8 steps and add upscale or interpolation.

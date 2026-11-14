@@ -1,6 +1,17 @@
 # tools
 
-Two scripts that work on the workflows in `../workflows` as they are now. Run them with ComfyUI's Python, and back up the workflow first. After editing a workflow file outside ComfyUI, close its open tab without saving and reopen it from the workflows list.
+Run these with ComfyUI's Python. `dasiwa_long.py` and `dasiwa_layout.py` edit the workflows in `../workflows`: back up the workflow first, and after editing a workflow file outside ComfyUI, close its open tab without saving and reopen it from the workflows list.
+
+## `dasiwa_stitch.py`: join clips into one video or a seamless loop
+
+Joins finished clips in the order given, cross-fading 5 frames at each join (the same join the Long workflows use), then passes the result through DaSiWa's Seamless Loop node, which picks the best loop point and morphs the end into the start with RIFE. It runs on the open ComfyUI, so ComfyUI must be running.
+
+```
+python -I tools/dasiwa_stitch.py "idle9_*_00001_.mp4" -o video/idle9_loop
+python -I tools/dasiwa_stitch.py part1.mp4 part2.mp4 --no-loop
+```
+
+Clips can be full paths, or file names or globs in the output/video, output or input folder. Clips of a different size are scaled to the first clip's size, and the first clip's fps is used. `--overlap N` and `--mode` change the join, `--no-loop` only joins, `--rtx` uses RTX Frame Generation for the loop point, and `--dry-run` prints the graph. The script prints the saved file's path.
 
 ## `dasiwa_long.py`: Long workflow with more segments
 

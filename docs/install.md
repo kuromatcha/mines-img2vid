@@ -54,7 +54,6 @@ All paths are inside `ComfyUI/models/` (or your shared models folder).
 | `frame_interpolation/` | `rife_v4.26.safetensors` | 23 MB | [Comfy-Org/frame_interpolation](https://huggingface.co/Comfy-Org/frame_interpolation) → `frame_interpolation/` (used by Seamless Loop and by the optional interpolation in all WAN workflows) |
 | `loras/` | `SVI_v2_PRO_Wan2.2-I2V-A14B_HIGH_lora_rank_128_fp16.safetensors` | 1.23 GB | [Kijai/WanVideo_comfy](https://huggingface.co/Kijai/WanVideo_comfy/tree/main/LoRAs/Stable-Video-Infinity/v2.0) → `LoRAs/Stable-Video-Infinity/v2.0/` *(Long workflows)* |
 | `loras/` | `SVI_v2_PRO_Wan2.2-I2V-A14B_LOW_lora_rank_128_fp16.safetensors` | 1.23 GB | same |
-| `upscale_models/` | `2x-AnimeSharpV4_RCAN.safetensors` | 31 MB | [Kim2091/2x-AnimeSharpV4](https://huggingface.co/Kim2091/2x-AnimeSharpV4) *(optional upscale)* |
 
 ### Ref2VA workflow (MiniMax H3)
 

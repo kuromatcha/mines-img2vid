@@ -40,9 +40,9 @@ HIGH = ("5 · High noise", [["Set shift (high)", "Apply NAG (high)", "Switch: NA
 LOW = ("6 · Low noise", [["Set shift (low)", "Apply NAG (low)", "Switch: NAG (low)",
                           "Sample low-noise steps", "Sample low-noise steps (segment 1)", "Decode segment 1"]])
 OUTPUT = [
-    ("Decode", [["Decode latent to frames", "Match colors to start image", "Make loop seamless"]]),
+    ("Decode", [["Decode latent to frames", "Fix color drift", "Match colors to start image", "Make loop seamless"]]),
     ("Upscale", [["Load upscale model", "Upscale with model", "Switch: model upscale"],
-                 ["Upscale with RTX VSR", "Switch: RTX upscale"]]),
+                 ["Upscale with RTX VSR", "Keep colors after RTX", "Switch: RTX upscale"]]),
     ("Interpolate", [["Interpolation multiplier", "Clamp multiplier to 2 or more", "Is multiplier above 1?"],
                      ["Load interpolation model", "Interpolate frames", "Switch: interpolation"]]),
     ("Video", [["Count frames", "Subtract 1 from frame count", "Remove repeated first frame", "Create video"]]),

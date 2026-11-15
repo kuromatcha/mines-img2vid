@@ -18,11 +18,11 @@ Clips can be full paths, or file names or globs in the output/video, output or i
 Builds a Long workflow from an I2V workflow, with one prompt and one optional end image per 5-second segment (2 to 12 segments). It adds the SVI 2.0 Pro LoRAs, chains the segments and joins them with a short cross-fade. Run the layout script on the result.
 
 ```
-python -I tools/dasiwa_long.py "workflows/Mine's I2V GGUF.json" "workflows/Mine's Long GGUF.json" 4
-python -I tools/dasiwa_layout.py "workflows/Mine's Long GGUF.json"
+python -I tools/dasiwa_long.py "workflows/Mine's I2V NVFP4.json" "workflows/Mine's Long NVFP4.json" 4
+python -I tools/dasiwa_layout.py "workflows/Mine's Long NVFP4.json"
 ```
 
-Use the NVFP4 I2V workflow to get the NVFP4 Long workflow. The output file is overwritten. With 2 segments, the result matches the Long workflows in this repository.
+The output file is overwritten. With 2 segments, the result matches the Long workflows in this repository.
 
 ## `dasiwa_layout.py`: tidy layout
 
@@ -31,7 +31,7 @@ Places every node inside the subgraph by its title, one group per stage (Models,
 It only knows the WAN workflows' node titles: do not run it on **Mine's Ref2VA W4A8** (MiniMax H3), which was laid out by its own generator with the same spacing rules.
 
 ```
-python -I tools/dasiwa_layout.py "workflows/Mine's Loop GGUF.json"
+python -I tools/dasiwa_layout.py "workflows/Mine's Loop NVFP4.json"
 ```
 
 ## How the workflows were built

@@ -3,7 +3,6 @@
 **Workflow choice**
 
 - Loops → **Mine's Loop**. Anything that should end in a different pose → **Mine's I2V**.
-- RTX 50-series → use **NVFP4**: about twice as fast as GGUF, with slightly softer fine detail (see *Measured speed*). Use **GGUF** on other cards, or for a final render where the last bit of detail matters.
 
 **Before you render**
 
@@ -12,9 +11,9 @@
 
 **Iterate cheaply, then render once**
 
-1. **Smoke test:** megapixels **0.3**, duration **3 s**, color match / upscale / interpolation off. About a minute per try.
+1. **Smoke test:** megapixels **0.3**, duration **3 s**, upscale / interpolation off (color drift fix can stay on: it takes a few seconds). About a minute per try.
 2. Change the prompt, or run again for a new seed, until the motion is right. When you like a result, fix its seed inside the subgraph (*Sample high-noise steps*: set *control after generate* to *fixed*).
-3. **Final:** with the seed fixed, megapixels **0.6** (or 0.8), duration **5 s**, color match on for loops, then optional upscale and interpolation.
+3. **Final:** with the seed fixed, megapixels **0.6** (or 0.8), duration **5 s**, color drift fix on, then optional upscale and interpolation.
    Motion changes a little with size and length, but stays close.
 
 **Prompting (this model)**
@@ -47,6 +46,6 @@ Test PC: RTX 5070 Ti 16 GB, 32 GB RAM. Loop workflow, 640×976 (0.6 MP), 5 s at 
 | Model | One 5 s loop | Per sampling step |
 |---|---|---|
 | NVFP4 | **71 s** | about 12.6 s |
-| GGUF Q6_K | **150 s** | about 24–29 s |
+| GGUF Q6_K (dropped) | **150 s** | about 24–29 s |
 
-GGUF spends about 25–40 s of each run moving its larger model in and out of video memory. With the same seed, NVFP4 moved slightly more and kept the loop just as seamless, with about 8% less fine detail (hard to see in playback).
+GGUF spent about 25–40 s of each run moving its larger model in and out of video memory. With the same seed, NVFP4 moved slightly more and kept the loop just as seamless, with about 8% less fine detail (hard to see in playback). That is why the GGUF workflows were dropped.

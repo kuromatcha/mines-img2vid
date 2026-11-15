@@ -6,28 +6,27 @@ Everything a new PC needs to run the workflows.
 
 - NVIDIA RTX 5070 Ti 16 GB, 32 GB RAM, Windows 11, NVMe SSD.
 - **16 GB VRAM** is the practical minimum. **32 GB RAM** works; 64 GB is more comfortable.
-- NVFP4 workflows need an **RTX 50-series (Blackwell)** card. Use the GGUF workflows on anything else.
-- Disk: about 30 GB for one model set (GGUF *or* NVFP4) plus 7 GB of shared files.
+- The WAN workflows (I2V, Loop, Long) use NVFP4 models and need an **RTX 50-series (Blackwell)** card. Older versions of this repository had GGUF workflows for other cards; they were dropped (same results, about half the speed).
+- Disk: about 16 GB for the NVFP4 models plus 7 GB of shared files.
 
 ## ComfyUI
 
 - **Comfy Desktop with ComfyUI 0.45.3 or newer** (tested on 0.45.3, PyTorch 2.12.1 + CUDA 13.0, Python 3.13).
-  Several built-in nodes used here (Transfer Color, Switch, Math Expression, Model Attention Backend, NAG, Wan First-Last-Frame, Frame Interpolation) only exist in recent versions.
+  Several built-in nodes used here (Transfer Color in the Long workflows, Switch, Math Expression, Model Attention Backend, NAG, Wan First-Last-Frame, Frame Interpolation) only exist in recent versions.
 - RTX 50-series needs the **CUDA 13 (cu130)** PyTorch build. Comfy Desktop installs it automatically.
 
 ## Custom node packs
 
 Install with ComfyUI-Manager ("Install Custom Nodes") or `git clone` into `ComfyUI/custom_nodes/`, then restart.
 
-**mines-pack is required.** It holds this project's own nodes (the optional image loader and the SVIPro end frame). Without it the I2V, Long and Ref2VA workflows open with missing nodes. It replaces the `ComfyUI-DaSiWa-EndFrame` folder that used to ship in this repository: if you copied that folder into `ComfyUI/custom_nodes/` before, delete it, since those old nodes are no longer used.
+**mines-pack is required.** It holds this project's own nodes (the optional image loader, the SVIPro end frame, color drift fix and keep source colors). Without it every workflow opens with missing nodes. It replaces the `ComfyUI-DaSiWa-EndFrame` folder that used to ship in this repository: if you copied that folder into `ComfyUI/custom_nodes/` before, delete it, since those old nodes are no longer used.
 
 | Pack | Needed for | Source |
 |---|---|---|
-| **ComfyUI-GGUF** | GGUF model loader (GGUF workflows) | https://github.com/city96/ComfyUI-GGUF |
 | **ComfyUI-DaSiWa-Nodes** | `Seamless Loop` node (loop workflows), `RTX Upscaler & Refiner` node (optional RTX upscale, all workflows) | https://github.com/darksidewalker/ComfyUI-DaSiWa-Nodes |
-| **mines-pack** (shows as *mine's pack*) | **Required by the I2V, Long and Ref2VA workflows.** `load image (optional)` (end image, I2V and Long workflows; references, Ref2VA workflow); `SVIPro end frame` (Long workflows); on Windows also hides the harmless WinError 10054 console traceback ([troubleshooting](troubleshooting.md)) | https://github.com/kuromatcha/mines-pack — `git clone https://github.com/kuromatcha/mines-pack.git` (not listed in ComfyUI-Manager) |
+| **mines-pack** (shows as *mine's pack*) | **Required by all workflows.** `color drift fix` (I2V and Loop workflows); `keep source colors` (after the RTX upscale, all workflows); `load image (optional)` (end image, I2V and Long workflows; references, Ref2VA workflow); `SVIPro end frame` (Long workflows); on Windows also hides the harmless WinError 10054 console traceback ([troubleshooting](troubleshooting.md)) | https://github.com/kuromatcha/mines-pack — `git clone https://github.com/kuromatcha/mines-pack.git` (not listed in ComfyUI-Manager) |
 | **ComfyUI-PainterI2V** | `PainterI2V` node (Mine's I2V Painter NVFP4) and `PainterFLF2V` node (Mine's Loop Painter NVFP4) | https://github.com/princepainter/ComfyUI-PainterI2V |
-| **ComfyUI-KJNodes** | `Wan Chunk FeedForward` node (optional FFN chunking, all workflows) and `MiniMax Chunk FeedForward` (Ref2VA workflow); `Wan Image To Video SVIPro` and `Image Batch Extend With Overlap` (Long workflows); `Model Patch Torch Settings` (GGUF fix) | https://github.com/kijai/ComfyUI-KJNodes |
+| **ComfyUI-KJNodes** | `Wan Chunk FeedForward` node (optional FFN chunking, all workflows) and `MiniMax Chunk FeedForward` (Ref2VA workflow); `Wan Image To Video SVIPro` and `Image Batch Extend With Overlap` (Long workflows) | https://github.com/kijai/ComfyUI-KJNodes |
 
 ComfyUI-DaSiWa-Nodes lists heavy extras in its `requirements.txt` (LLM, RTX, AMD tools). **Seamless Loop does not need them.** The pack loads without installing them; they only load when you use those other nodes. If an installer insists, skipping `llama-cpp-python` is fine (it often fails to build on Windows).
 
@@ -47,13 +46,11 @@ All paths are inside `ComfyUI/models/` (or your shared models folder).
 
 | Folder | File | Size | Source |
 |---|---|---|---|
-| `unet/` | `DasiwaWAN22I2V14BLightspeed_snatchkissHighV11-Q6_K.gguf` | 11.2 GB | [darksidewalker/DaSiWa-WAN2.2-I2V](https://huggingface.co/darksidewalker/DaSiWa-WAN2.2-I2V) → `Distilled/GGUF/v11/` **(gated)** |
-| `unet/` | `DasiwaWAN22I2V14BLightspeed_snatchkissLowV11-Q6_K.gguf` | 11.2 GB | same |
-| `diffusion_models/` | `DasiwaWAN22I2V14BLightspeed_snatchkissHighV11-NVFP4.safetensors` | 7.8 GB | same repo → `Distilled/NVFP4/v11/` **(gated, RTX 50 only)** |
+| `diffusion_models/` | `DasiwaWAN22I2V14BLightspeed_snatchkissHighV11-NVFP4.safetensors` | 7.8 GB | [darksidewalker/DaSiWa-WAN2.2-I2V](https://huggingface.co/darksidewalker/DaSiWa-WAN2.2-I2V) → `Distilled/NVFP4/v11/` **(gated, RTX 50 only)** |
 | `diffusion_models/` | `DasiwaWAN22I2V14BLightspeed_snatchkissLowV11-NVFP4.safetensors` | 7.8 GB | same |
 | `text_encoders/` | `umt5_xxl_fp8_e4m3fn_scaled.safetensors` | 6.3 GB | [Comfy-Org/Wan_2.2_ComfyUI_Repackaged](https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged) → `split_files/text_encoders/` |
 | `vae/` | `wan_2.1_vae.safetensors` | 0.24 GB | same repo → `split_files/vae/` |
-| `frame_interpolation/` | `rife_v4.26.safetensors` | 23 MB | [Comfy-Org/frame_interpolation](https://huggingface.co/Comfy-Org/frame_interpolation) → `frame_interpolation/` (used by Seamless Loop and by the optional interpolation in all 4 workflows) |
+| `frame_interpolation/` | `rife_v4.26.safetensors` | 23 MB | [Comfy-Org/frame_interpolation](https://huggingface.co/Comfy-Org/frame_interpolation) → `frame_interpolation/` (used by Seamless Loop and by the optional interpolation in all WAN workflows) |
 | `loras/` | `SVI_v2_PRO_Wan2.2-I2V-A14B_HIGH_lora_rank_128_fp16.safetensors` | 1.23 GB | [Kijai/WanVideo_comfy](https://huggingface.co/Kijai/WanVideo_comfy/tree/main/LoRAs/Stable-Video-Infinity/v2.0) → `LoRAs/Stable-Video-Infinity/v2.0/` *(Long workflows)* |
 | `loras/` | `SVI_v2_PRO_Wan2.2-I2V-A14B_LOW_lora_rank_128_fp16.safetensors` | 1.23 GB | same |
 | `upscale_models/` | `2x-AnimeSharpV4_RCAN.safetensors` | 31 MB | [Kim2091/2x-AnimeSharpV4](https://huggingface.co/Kim2091/2x-AnimeSharpV4) *(optional upscale)* |

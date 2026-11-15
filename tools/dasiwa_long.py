@@ -10,7 +10,7 @@ Usage: python -I tools/dasiwa_long.py <finished I2V workflow> <output workflow> 
   and the SVIPro end frame node from mines-pack (github.com/kuromatcha/mines-pack).
 - Each decoded segment after the first starts by replaying the last 5 frames of the previous one; those are
   cross-faded over each other, then everything after the join is the same as the I2V workflow
-  (color match, upscale, RTX upscale, interpolation, create video).
+  (color drift fix, upscale, RTX upscale, interpolation, create video).
 """
 import copy, json, sys, uuid
 
@@ -98,8 +98,20 @@ hi_s, lo_s = T["Sample high-noise steps"], T["Sample low-noise steps"]
 enc, neg, clip_ld, vae = T["Encode prompt"], T["Encode negative prompt"], T["Load text encoder"], T["Load VAE"]
 scale, size, old_lat, dec = T["Scale image to megapixels"], T["Get image width and height"], \
     T["Build latent from start and end image"], T["Decode latent to frames"]
-cm = T["Match colors to start image"]
+cm = T["Fix color drift"]
 frames = src_of(old_lat, "length")
+
+# 0. colour: per-frame match to the start image instead of the I2V drift fix. Long clips fade in contrast and
+#    color segment by segment on the moving figure, which the drift fix (fitted on still areas) does not catch:
+#    4 segments, last frame contrast 75% with the drift fix, 94% with per-frame 0.75. Same slots 0 and 2.
+cm.update(type="ColorTransfer", title="Match colors to start image",
+          properties={"Node name for S&R": "ColorTransfer", "cnr_id": "comfy-core"},
+          widgets_values=["reinhard_lab", "per_frame", 0.75])
+cm.pop("widgets_values_named", None)
+cm["inputs"] = [pin("image_target", "IMAGE"), pin("image_ref", "IMAGE"), pin("strength", "FLOAT", True)]
+cm["outputs"][0]["name"] = cm["outputs"][0]["localized_name"] = "image"
+sg["links"][:] = [l for l in sg["links"] if not (l["target_id"] == cm["id"] and l["target_slot"] == 1)]
+lk(scale["id"], 0, cm["id"], 1, "IMAGE")
 
 # 1. SVI LoRAs right after the model loaders
 for ld, lora, x in ((hi_load, HIGH, "high"), (lo_load, LOW, "low")):
@@ -154,7 +166,7 @@ if not any(l["origin_id"] == size["id"] for l in sg["links"]):
     drop_node(size)
 hi_s["title"], lo_s["title"] = "Sample high-noise steps (segment 1)", "Sample low-noise steps (segment 1)"
 enc["title"], dec["title"] = "Encode prompt 1", "Decode segment 1"
-retarget(dec["id"], 0, -1, -1, only_to={cm["id"]})   # color match is re-fed from the joined frames below
+retarget(dec["id"], 0, -1, -1, only_to={cm["id"]})   # color drift fix is re-fed from the joined frames below
 
 # 4. segments 2..N
 text_slot = [i["name"] for i in sg["inputs"]].index("text")
@@ -260,6 +272,8 @@ for i in sg["inputs"] + outer["inputs"]:
         i["label"] = "prompt 1"
     if i["name"] == "value_1":
         i["label"] = "segment length (seconds)"
+    if i["name"] == "strength":
+        i["label"] = "color match strength"
 assert [i["name"] for i in outer["inputs"]] == [i["name"] for i in sg["inputs"]]
 wn = [i["name"] for i in outer["inputs"] if i.get("widget")]
 P1 = ("A woman with black hair in a messy bun, seen from behind in a wet light blue dress and a beige knit cardigan, "
@@ -288,7 +302,9 @@ for n in d["nodes"]:
             n["widgets_values_named"][list(n["widgets_values_named"])[0]] = n["widgets_values"][0]
 note = [n for n in d["nodes"] if n["type"] == "MarkdownNote"][0]
 g = note["widgets_values"][0]
-for a, b in (("## Prompt\n", f"## Prompts\n- One prompt per 5-second segment, {N} segments. The next motion starts where the last one ended.\n"),
+for a, b in (("- **color drift fix**: 1 · 0 = off. Removes slow color drift so later frames keep the colors of the first frame; motion and flashes are left alone.\n",
+              "- **color match strength**: 0 off · 0.75 on\n"),
+             ("## Prompt\n",f"## Prompts\n- One prompt per 5-second segment, {N} segments. The next motion starts where the last one ended.\n"),
              ("- Same start and end pose: use the Loop workflow.\n", "- Each prompt: describe only that segment's motion; repeat camera and scene.\n"),
              ("- **duration (seconds)**: 5. Longer drifts.\n", "- **segment length (seconds)**: 5. Longer drifts.\n"),
              ("- Seed: random. To keep one: *Sample high-noise steps* → fixed.\n",

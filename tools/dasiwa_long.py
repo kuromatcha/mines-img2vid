@@ -31,7 +31,6 @@ outer = [n for n in d["nodes"] if n["type"] == sg["id"]][0]
 assert not any(n["type"] == "DaSiWa_SeamlessLoop" for n in sg["nodes"]), "start from an I2V workflow"
 assert not any(n["type"] in ("WanImageToVideoSVIPro", "MinesSVIProEndFrame") for n in sg["nodes"]), "already a Long workflow"
 assert "end_image" in [i["name"] for i in sg["inputs"]], "start from an I2V workflow from workflows/ (it needs the end image input)"
-gguf = any(n["type"] == "UnetLoaderGGUF" for n in sg["nodes"])
 T = {n.get("title"): n for n in sg["nodes"]}
 L = {l["id"]: l for l in sg["links"]}
 
@@ -293,11 +292,11 @@ outer["widgets_values_named"] = {n: vals[n] for n in wn}
 # 6. identity: new subgraph id, names, save prefix, guide
 new_id = str(uuid.uuid4())
 sg["id"] = outer["type"] = new_id
-sg["name"] = f"Mine's Long {'GGUF' if gguf else 'NVFP4'}"
+sg["name"] = "Mine's Long NVFP4"
 d["id"] = str(uuid.uuid4())
 for n in d["nodes"]:
     if n["type"] == "SaveVideo":
-        n["widgets_values"][0] = "video/DaSiWa_long" + ("" if gguf else "_nvfp4")
+        n["widgets_values"][0] = "video/DaSiWa_long_nvfp4"
         if "widgets_values_named" in n:
             n["widgets_values_named"][list(n["widgets_values_named"])[0]] = n["widgets_values"][0]
 note = [n for n in d["nodes"] if n["type"] == "MarkdownNote"][0]

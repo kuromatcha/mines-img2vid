@@ -41,7 +41,7 @@ From testing these workflows:
 
 ## Measured speed
 
-Test PC: RTX 5070 Ti 16 GB, 32 GB RAM. Loop workflow, 640×976 (0.6 MP), 5 s at 16 fps, color match on, other extras off, default sampling (4 steps, euler / simple). Times are for a full run after a warm-up run, so the models had already been loaded once.
+Test PC: RTX 5070 Ti 16 GB, 32 GB RAM. Loop workflow, 640×976 (0.6 MP), 5 s at 16 fps, color correction on, other extras off, default sampling (4 steps, euler / simple). Times are for a full run after a warm-up run, so the models had already been loaded once.
 
 | Model | One 5 s loop | Per sampling step |
 |---|---|---|

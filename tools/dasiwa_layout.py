@@ -1,4 +1,4 @@
-"""Layout pass for all workflows (I2V, Loop, Long; GGUF and NVFP4).
+"""Layout pass for the WAN workflows (I2V, Loop, Long, Painter).
 
 Usage: python -I tools/dasiwa_layout.py <workflow> [<workflow> ...]
 
@@ -23,9 +23,9 @@ def snap(v, grid=20):
 
 MODELS = ("1 · Models", [
     ["Load high-noise model", "Load low-noise model", "Load text encoder", "Load VAE"],
-    ["Turn off fp16 accumulation (high, GGUF fix)", "Apply SVI LoRA (high)", "Set attention backend (high)",
+    ["Apply SVI LoRA (high)", "Set attention backend (high)",
      "Chunk feed-forward (high)", "Switch: FFN chunking (high)"],
-    ["Turn off fp16 accumulation (low, GGUF fix)", "Apply SVI LoRA (low)", "Set attention backend (low)",
+    ["Apply SVI LoRA (low)", "Set attention backend (low)",
      "Chunk feed-forward (low)", "Switch: FFN chunking (low)"],
 ])
 INPUT = ("2 · Input", [["Scale image to megapixels", "Get image width and height", "Encode start image (anchor)",

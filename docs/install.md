@@ -57,7 +57,7 @@ All paths are inside `ComfyUI/models/` (or your shared models folder).
 
 ### Ref2VA workflow (MiniMax H3)
 
-**Mine's Ref2VA W4A8** uses a different model family. It needs ComfyUI 0.45.3 or newer with the native MiniMax H3 and RelayVSR nodes, plus the KJNodes, mines-pack and DaSiWa-Nodes packs above (it uses `MiniMax Chunk FeedForward`, `load image (optional)` and the RTX upscaler). No NVFP4 card is needed. The model plus the text encoder are about 28 GB, so on 32 GB of RAM it relies on the page file and the first run is slow.
+**Mine's Ref2VA W4A8** uses a different model family. It needs ComfyUI 0.45.3 or newer with the native MiniMax H3 nodes, plus the KJNodes, mines-pack and DaSiWa-Nodes packs above (it uses `MiniMax Chunk FeedForward`, `load image (optional)` and the RTX upscaler). No NVFP4 card is needed. The model plus the text encoder are about 28 GB, so on 32 GB of RAM it relies on the page file and the first run is slow.
 
 | Folder | File | Size | Source |
 |---|---|---|---|
@@ -65,11 +65,9 @@ All paths are inside `ComfyUI/models/` (or your shared models folder).
 | `text_encoders/` | `qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors` | 15.69 GB | [Comfy-Org/MiniMax-H3](https://huggingface.co/Comfy-Org/MiniMax-H3) → `text_encoders/` |
 | `vae/` | `minimax_h3_video_vae_int8_convrot.safetensors` | 2.81 GB | [Kijai/MiniMax-H3-experimental](https://huggingface.co/Kijai/MiniMax-H3-experimental) |
 | `vae/` | `minimax_h3_audio_vae_fp32.safetensors` | 0.6 GB | [Comfy-Org/MiniMax-H3](https://huggingface.co/Comfy-Org/MiniMax-H3) → `vae/` |
-| `diffusion_models/` | `relayvsr_x2_lightx2v_int8_convrot.safetensors` | 5.16 GB | [Comfy-Org/RelayVSR](https://huggingface.co/Comfy-Org/RelayVSR) → `diffusion_models/` *(RelayVSR 2x)* |
-| `vae/` | `relayvsr_flash_vae_x2_fp32.safetensors` | 0.13 GB | same → `vae/` *(RelayVSR 2x)* |
 | `frame_interpolation/` | `rife_v4.26.safetensors` | 23 MB | same as above *(interpolation)* |
 
-The RelayVSR files are only used when **RelayVSR 2x** is on, the RIFE file when **interpolate** is above 1, but ComfyUI lists them as missing at load while they are absent, because the loader nodes are in the graph.
+The RIFE file is only used when **interpolate** is above 1, but ComfyUI lists it as missing at load while it is absent, because the loader node is in the graph.
 
 **Gated DaSiWa repo:** log in to Hugging Face, open the repo page and accept the access request. Then either download in the browser, or log in once from a terminal with ComfyUI's Python and download from there:
 

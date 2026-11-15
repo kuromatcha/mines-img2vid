@@ -77,8 +77,7 @@ With PainterFLF2V the Loop variant closes as well as the plain Loop (seam 0.64�
 | steps | **6** | 4 fast preview (rough audio) · 6 basic · 8 quality. For the non-turbo build (`…ref2va_v5xs_pruned_graviton_w4a8`): 20–25 steps, sampler *res_multistep*, shift 10–12. |
 | shift | **8** | Video shift, turbo range 6–12. The audio shift is fixed at 4 (*Set shift*, inside the subgraph). |
 | FFN chunking | **off** | Less VRAM, slower. On from about 0.7 MP. |
-| RelayVSR 2x | **off** | 2× video upscale trained on H3 clips, one sampling step; only every 15th frame goes through the model. Output is 2× per side. |
-| RTX 2x | **off** | 2× RTX Video Super Resolution (needs `nvidia-vfx`, see [install](install.md)). Fast and mild; overrides RelayVSR 2x if both are on. |
+| RTX 2x | **off** | 2× RTX Video Super Resolution (needs `nvidia-vfx`, see [install](install.md)). Fast and mild; *Keep colors after RTX* gives the frames back their colors. The RelayVSR 2x upscale that used to be here was dropped: in a test it was barely sharper than RTX and shifted colors by 1.4 ΔE. |
 | mute audio | **off** | Saves the video without a sound track; the audio is not decoded at all. |
 
 **Inside the subgraph:** *Sampler* **euler** / *Scheduler* **simple**, CFG 1, no negative prompt (turbo model; for the non-turbo model set *Sampler* to res_multistep). *Seed* is random; set *fixed* to keep one. Reference size in *Build conditioning from references*: **match** (*max* keeps the identity sharper but is much slower). Model files are picked on the *Load …* nodes. Routine: test at 0.3 MP, 5 s, 4 steps with the extras off; rerun until the motion is right, fix the seed; then render at 0.6 MP and 8 steps and add upscale or interpolation.

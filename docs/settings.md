@@ -64,7 +64,7 @@ With PainterFLF2V the Loop variant closes as well as the plain Loop (seam 0.64�
 
 ## Ref2VA workflow (MiniMax H3)
 
-**Mine's Ref2VA W4A8** makes a video with sound from up to 3 reference images, with the DaSiWa GXS v5 Turbo model (W4A8 build). Models: [install](install.md#ref2va-workflow-minimax-h3). It has not been rendered end to end yet; the values below are the developer's and the model's own.
+**Mine's Ref2VA INT8** makes a video with sound from up to 3 reference images, with the DaSiWa GXS v5 model (int8 build, not Turbo). Models: [install](install.md#ref2va-workflow-minimax-h3). Tested with a short clip (3 s, 0.3 MP, 20 steps: 46 s on an RTX 5070 Ti once loaded, motion and sound as prompted); the values below are otherwise the developer's and the model's own.
 
 | Setting | Default | Suggestion |
 |---|---|---|
@@ -74,10 +74,10 @@ With PainterFLF2V the Loop variant closes as well as the plain Loop (seam 0.64�
 | duration (seconds) | **5** | Trained on 5–15 s. The frame count is rounded up to a multiple of 17, plus 5. |
 | fps | **24** | Keep 24: the model is trained at 24 fps, and changing it changes the frame count and the speed of the motion. |
 | interpolate | **1 (off)** | 2 doubles the fps with RIFE (48 fps). |
-| steps | **6** | 4 fast preview (rough audio) · 6 basic · 8 quality. For the non-turbo build (`…ref2va_v5xs_pruned_graviton_w4a8`): 20–25 steps, sampler *res_multistep*, shift 10–12. |
-| shift | **8** | Video shift, turbo range 6–12. The audio shift is fixed at 4 (*Set shift*, inside the subgraph). |
+| steps | **20** | 20–25 for this (non-Turbo) model. The Turbo build (`…graviton_turbo_…`) needs only 6, with sampler *euler* and shift 8. |
+| shift | **10** | Video shift, range 10–12 for this model. The audio shift is fixed at 4 (*Set shift*, inside the subgraph). |
 | FFN chunking | **off** | Less VRAM, slower. On from about 0.7 MP. |
 | RTX 2x | **off** | 2× RTX Video Super Resolution (needs `nvidia-vfx`, see [install](install.md)). Fast and mild; *Keep colors after RTX* gives the frames back their colors. The RelayVSR 2x upscale that used to be here was dropped: in a test it was barely sharper than RTX and shifted colors by 1.4 ΔE. |
 | mute audio | **off** | Saves the video without a sound track; the audio is not decoded at all. |
 
-**Inside the subgraph:** *Sampler* **euler** / *Scheduler* **simple**, CFG 1, no negative prompt (turbo model; for the non-turbo model set *Sampler* to res_multistep). *Seed* is random; set *fixed* to keep one. Reference size in *Build conditioning from references*: **match** (*max* keeps the identity sharper but is much slower). Model files are picked on the *Load …* nodes. Routine: test at 0.3 MP, 5 s, 4 steps with the extras off; rerun until the motion is right, fix the seed; then render at 0.6 MP and 8 steps and add upscale or interpolation.
+**Inside the subgraph:** *Sampler* **res_multistep** / *Scheduler* **simple**, CFG 1, no negative prompt. *Seed* is random; set *fixed* to keep one. Reference size in *Build conditioning from references*: **match** (*max* keeps the identity sharper but is much slower). Model files are picked on the *Load …* nodes. Routine: test at 0.3 MP, 5 s with the extras off; rerun until the motion is right, fix the seed; then render at 0.6 MP and 25 steps and add upscale or interpolation.

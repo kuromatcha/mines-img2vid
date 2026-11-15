@@ -57,11 +57,11 @@ All paths are inside `ComfyUI/models/` (or your shared models folder).
 
 ### Ref2VA workflow (MiniMax H3)
 
-**Mine's Ref2VA W4A8** uses a different model family. It needs ComfyUI 0.45.3 or newer with the native MiniMax H3 nodes, plus the KJNodes, mines-pack and DaSiWa-Nodes packs above (it uses `MiniMax Chunk FeedForward`, `load image (optional)` and the RTX upscaler). No NVFP4 card is needed. The model plus the text encoder are about 28 GB, so on 32 GB of RAM it relies on the page file and the first run is slow.
+**Mine's Ref2VA INT8** uses a different model family. It needs ComfyUI 0.45.3 or newer with the native MiniMax H3 nodes, plus the KJNodes, mines-pack and DaSiWa-Nodes packs above (it uses `MiniMax Chunk FeedForward`, `load image (optional)` and the RTX upscaler). No NVFP4 card is needed. The model plus the text encoder are about 36 GB, so on 32 GB of RAM it relies on the page file and the first run is slow.
 
 | Folder | File | Size | Source |
 |---|---|---|---|
-| `diffusion_models/` | `dasiwa_minimax_h3_ref2va_v5xs_pruned_graviton_turbo_w4a8.safetensors` | 12.25 GB | [Civitai: DaSiWa MiniMax H3](https://civitai.com/models/2877206), version "DaSiWa GXS v5 Turbo MiniMax H3" (needs a Civitai login) |
+| `diffusion_models/` | `dasiwa_minimax_h3_ref2va_v5xs_pruned_graviton_int8_row-wise_convrot_runtime_mixed.safetensors` | 20.48 GB | [Civitai: DaSiWa MiniMax H3](https://civitai.com/models/2877206), version "DaSiWa GXS v5", the int8 file (not the Turbo version; needs a Civitai login) |
 | `text_encoders/` | `qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors` | 15.69 GB | [Comfy-Org/MiniMax-H3](https://huggingface.co/Comfy-Org/MiniMax-H3) → `text_encoders/` |
 | `vae/` | `minimax_h3_video_vae_int8_convrot.safetensors` | 2.81 GB | [Kijai/MiniMax-H3-experimental](https://huggingface.co/Kijai/MiniMax-H3-experimental) |
 | `vae/` | `minimax_h3_audio_vae_fp32.safetensors` | 0.6 GB | [Comfy-Org/MiniMax-H3](https://huggingface.co/Comfy-Org/MiniMax-H3) → `vae/` |

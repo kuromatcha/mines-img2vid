@@ -9,7 +9,7 @@ ComfyUI image-to-video workflows for **DaSiWa WAN 2.2 I2V 14B v11**, set up with
 | **Mine's Loop Painter NVFP4** | Seamless loop with the PainterFLF2V node (motion boost) | RTX 50-series |
 | **Mine's I2V Painter NVFP4** | Image to video with the PainterI2V node (motion boost, no end image) | RTX 50-series |
 | **Mine's Long NVFP4** | Longer video, one prompt per 5 s segment (SVI 2.0 Pro) | RTX 50-series |
-| **Mine's Ref2VA W4A8** | Video with sound from up to 3 reference images (MiniMax H3, a different model: see [Ref2VA](docs/settings.md#ref2va-workflow-minimax-h3)) | 16 GB+ GPU, about 28 GB RAM plus page file |
+| **Mine's Ref2VA INT8** | Video with sound from up to 3 reference images (MiniMax H3, a different model: see [Ref2VA](docs/settings.md#ref2va-workflow-minimax-h3)) | 16 GB+ GPU, about 36 GB RAM plus page file |
 
 The GGUF versions were dropped: they gave the same results as NVFP4 at about half the speed. The WAN workflows therefore need an RTX 50-series card.
 

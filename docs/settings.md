@@ -49,6 +49,19 @@ Same settings as I2V, plus:
 - *Sample high-noise steps (segment N)*: each segment has its own seed.
 - More segments: rebuild with `tools/dasiwa_long.py` (see [Tools](../tools/README.md)).
 
+## Painter NVFP4 (I2V and Loop)
+
+**Mine's I2V Painter NVFP4** and **Mine's Loop Painter NVFP4** are the same as **Mine's I2V NVFP4** and **Mine's Loop NVFP4** (same model files and settings), but the start image is encoded by a Painter node (ComfyUI-PainterI2V pack, an extra install) instead of the Wan first/last-frame node: **PainterI2V** in I2V, **PainterFLF2V** in Loop. One extra setting, and in I2V one setting lost:
+
+| Setting | Default | Suggestion |
+|---|---|---|
+| motion amplitude | **1.15** | The Painter fix for the slow motion of 4-step distilled models. 1.0 = off, up to 2.0 = more motion. Above about 1.2 it can add flicker, and on rare seeds the whole clip comes out black (see [troubleshooting](troubleshooting.md)). 1.3 failed on 1 of 7 seeds tested, 1.15 on 0 of 13. |
+| end image (I2V only) | removed | PainterI2V has no end-image input. For an end image use the plain I2V workflow. |
+
+**Why the Loop variant uses PainterFLF2V and not PainterI2V:** the loop needs the clip to end back on the start pose, which the first/last-frame node does by using the start image as both. PainterI2V has no end frame, so the clip drifts away and Seamless Loop has nothing to close. Measured (0.6 MP, 5 s, two seeds): with PainterI2V the last frame was 9.4–9.6× a typical frame step away from the first (plain Loop 3.3×, PainterFLF2V 2.8–3.0×), and the finished loop had a pop of 4.1–4.4× the median step near its end (plain Loop 1.9×, PainterFLF2V 1.9×). The I2V workflow has no loop, so PainterI2V is fine there.
+
+With PainterFLF2V the Loop variant closes as well as the plain Loop (seam 0.64–0.73 vs 0.80, below 1 is seamless) and moves more (mean frame step 2.1–2.3 vs 1.8). Motion amplitude 1.3 also closed fine. Run time is about the same (71–80 s). Two seeds and one image only: judge the look yourself.
+
 ## Ref2VA workflow (MiniMax H3)
 
 **Mine's Ref2VA W4A8** makes a video with sound from up to 3 reference images, with the DaSiWa GXS v5 Turbo model (W4A8 build). Models: [install](install.md#ref2va-workflow-minimax-h3). It has not been rendered end to end yet; the values below are the developer's and the model's own.

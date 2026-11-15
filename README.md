@@ -8,13 +8,17 @@ ComfyUI image-to-video workflows for **DaSiWa WAN 2.2 I2V 14B v11**, set up with
 | **Mine's Loop NVFP4** | Seamless loop, about 2× faster | RTX 50-series |
 | **Mine's I2V GGUF** | Image to video | any NVIDIA GPU, 16 GB+ |
 | **Mine's I2V NVFP4** | Image to video, about 2× faster | RTX 50-series |
+| **Mine's Loop Painter NVFP4** | Seamless loop with the PainterFLF2V node (motion boost) | RTX 50-series |
+| **Mine's I2V Painter NVFP4** | Image to video with the PainterI2V node (motion boost, no end image) | RTX 50-series |
 | **Mine's Long GGUF** | Longer video, one prompt per 5 s segment (SVI 2.0 Pro) | any NVIDIA GPU, 16 GB+ |
 | **Mine's Long NVFP4** | Longer video, about 2× faster | RTX 50-series |
 | **Mine's Ref2VA W4A8** | Video with sound from up to 3 reference images (MiniMax H3, a different model: see [Ref2VA](docs/settings.md#ref2va-workflow-minimax-h3)) | 16 GB+ GPU, about 28 GB RAM plus page file |
 
+> **Needs [mines-pack](https://github.com/kuromatcha/mines-pack)**, this project's own node pack (optional image loader, SVIPro end frame). Clone it into `ComfyUI/custom_nodes/` and restart ComfyUI; without it the I2V, Long and Ref2VA workflows show missing nodes. It replaces the `ComfyUI-DaSiWa-EndFrame` folder that used to ship here.
+
 ## Quick start
 
-1. Install ComfyUI, the node packs and the models: [docs/install.md](docs/install.md)
+1. Install ComfyUI, the node packs (including **mines-pack**) and the models: [docs/install.md](docs/install.md)
 2. Drag a file from [`workflows/`](workflows) into ComfyUI.
 3. Load your image, write a prompt, keep the defaults and run.
 

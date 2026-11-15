@@ -19,11 +19,14 @@ Everything a new PC needs to run the workflows.
 
 Install with ComfyUI-Manager ("Install Custom Nodes") or `git clone` into `ComfyUI/custom_nodes/`, then restart.
 
+**mines-pack is required.** It holds this project's own nodes (the optional image loader and the SVIPro end frame). Without it the I2V, Long and Ref2VA workflows open with missing nodes. It replaces the `ComfyUI-DaSiWa-EndFrame` folder that used to ship in this repository: if you copied that folder into `ComfyUI/custom_nodes/` before, delete it, since those old nodes are no longer used.
+
 | Pack | Needed for | Source |
 |---|---|---|
 | **ComfyUI-GGUF** | GGUF model loader (GGUF workflows) | https://github.com/city96/ComfyUI-GGUF |
 | **ComfyUI-DaSiWa-Nodes** | `Seamless Loop` node (loop workflows), `RTX Upscaler & Refiner` node (optional RTX upscale, all workflows) | https://github.com/darksidewalker/ComfyUI-DaSiWa-Nodes |
-| **ComfyUI-DaSiWa-EndFrame** | `Load Image (optional)` (end image, I2V and Long workflows); `Wan Image To Video SVIPro (end frame)` (Long workflows); on Windows also hides the harmless WinError 10054 console traceback ([troubleshooting](troubleshooting.md)) | this repository, [`custom_nodes/`](../custom_nodes) — copy the `ComfyUI-DaSiWa-EndFrame` folder into `ComfyUI/custom_nodes/` |
+| **mines-pack** (shows as *mine's pack*) | **Required by the I2V, Long and Ref2VA workflows.** `load image (optional)` (end image, I2V and Long workflows; references, Ref2VA workflow); `SVIPro end frame` (Long workflows); on Windows also hides the harmless WinError 10054 console traceback ([troubleshooting](troubleshooting.md)) | https://github.com/kuromatcha/mines-pack — `git clone https://github.com/kuromatcha/mines-pack.git` (not listed in ComfyUI-Manager) |
+| **ComfyUI-PainterI2V** | `PainterI2V` node (Mine's I2V Painter NVFP4) and `PainterFLF2V` node (Mine's Loop Painter NVFP4) | https://github.com/princepainter/ComfyUI-PainterI2V |
 | **ComfyUI-KJNodes** | `Wan Chunk FeedForward` node (optional FFN chunking, all workflows) and `MiniMax Chunk FeedForward` (Ref2VA workflow); `Wan Image To Video SVIPro` and `Image Batch Extend With Overlap` (Long workflows); `Model Patch Torch Settings` (GGUF fix) | https://github.com/kijai/ComfyUI-KJNodes |
 
 ComfyUI-DaSiWa-Nodes lists heavy extras in its `requirements.txt` (LLM, RTX, AMD tools). **Seamless Loop does not need them.** The pack loads without installing them; they only load when you use those other nodes. If an installer insists, skipping `llama-cpp-python` is fine (it often fails to build on Windows).
@@ -57,7 +60,7 @@ All paths are inside `ComfyUI/models/` (or your shared models folder).
 
 ### Ref2VA workflow (MiniMax H3)
 
-**Mine's Ref2VA W4A8** uses a different model family. It needs ComfyUI 0.45.3 or newer with the native MiniMax H3 and RelayVSR nodes, plus the KJNodes, DaSiWa-EndFrame and DaSiWa-Nodes packs above (it uses `MiniMax Chunk FeedForward`, `Load Image (optional)` and the RTX upscaler). No NVFP4 card is needed. The model plus the text encoder are about 28 GB, so on 32 GB of RAM it relies on the page file and the first run is slow.
+**Mine's Ref2VA W4A8** uses a different model family. It needs ComfyUI 0.45.3 or newer with the native MiniMax H3 and RelayVSR nodes, plus the KJNodes, mines-pack and DaSiWa-Nodes packs above (it uses `MiniMax Chunk FeedForward`, `load image (optional)` and the RTX upscaler). No NVFP4 card is needed. The model plus the text encoder are about 28 GB, so on 32 GB of RAM it relies on the page file and the first run is slow.
 
 | Folder | File | Size | Source |
 |---|---|---|---|

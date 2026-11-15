@@ -30,7 +30,8 @@ MODELS = ("1 · Models", [
 ])
 INPUT = ("2 · Input", [["Scale image to megapixels", "Get image width and height", "Encode start image (anchor)",
                         "Encode prompt", "Encode prompt 1", "Encode negative prompt",
-                        "Build latent from start and end image", "Build latent from first and last frame",
+                        "Build latent from start and end image", "Build latent from start image (Painter)", "Build latent from first and last frame (Painter)",
+                        "Build latent from first and last frame",
                         "Build segment 1 latent (SVI)"]])
 TIMING = ("3 · Timing", [["Duration in seconds", "Frames per second", "Calculate frame count", "Calculate output fps"]])
 SAMPLING = ("4 · Sampling", [["Total steps", "Split step", "CFG"]])
@@ -183,7 +184,7 @@ def front(d, sg):
     outer = [n for n in d["nodes"] if n["type"] == sg["id"]][0]
     top = {n["type"]: n for n in d["nodes"]}
     start = top["LoadImage"]
-    ends = sorted((n for n in d["nodes"] if n["type"] == "DaSiWaLoadImageOptional"), key=lambda n: n["title"])
+    ends = sorted((n for n in d["nodes"] if n["type"] == "MinesLoadImageOptional"), key=lambda n: n["title"])
     row = [(n, "image") for n in [start] + ends] + [(outer, "settings"), (top["SaveVideo"], "video"),
                                                    (top["MarkdownNote"], "guide")]
     assert len(row) == len(d["nodes"]), "unplaced front-panel node"

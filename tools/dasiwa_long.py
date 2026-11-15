@@ -7,7 +7,7 @@ Usage: python -I tools/dasiwa_long.py <finished I2V workflow> <output workflow> 
   previous segment (keeps the motion going), so joints carry momentum instead of restarting from a still frame.
 - Every segment has an optional end image (front panel "End image (segment N)", "none" = skip): the pose that
   segment ends on, placed on its last frame. Needs an I2V workflow from workflows/ (it has the end image input)
-  and the DaSiWa end-frame node (custom_nodes/ComfyUI-DaSiWa-EndFrame).
+  and the SVIPro end frame node from mines-pack (github.com/kuromatcha/mines-pack).
 - Each decoded segment after the first starts by replaying the last 5 frames of the previous one; those are
   cross-faded over each other, then everything after the join is the same as the I2V workflow
   (color match, upscale, RTX upscale, interpolation, create video).
@@ -29,7 +29,7 @@ d = json.load(open(src, encoding="utf-8"))
 sg = d["definitions"]["subgraphs"][0]
 outer = [n for n in d["nodes"] if n["type"] == sg["id"]][0]
 assert not any(n["type"] == "DaSiWa_SeamlessLoop" for n in sg["nodes"]), "start from an I2V workflow"
-assert not any(n["type"] in ("WanImageToVideoSVIPro", "DaSiWaSVIProEndFrame") for n in sg["nodes"]), "already a Long workflow"
+assert not any(n["type"] in ("WanImageToVideoSVIPro", "MinesSVIProEndFrame") for n in sg["nodes"]), "already a Long workflow"
 assert "end_image" in [i["name"] for i in sg["inputs"]], "start from an I2V workflow from workflows/ (it needs the end image input)"
 gguf = any(n["type"] == "UnetLoaderGGUF" for n in sg["nodes"])
 T = {n.get("title"): n for n in sg["nodes"]}
@@ -117,14 +117,14 @@ lk(vae["id"], 0, anchor["id"], 1, "VAE")
 
 
 def svi(title, pos, pos_cond, prev):
-    n = node("DaSiWaSVIProEndFrame", title, pos, [380, 240],
+    n = node("MinesSVIProEndFrame", title, pos, [380, 240],
              [pin("positive", "CONDITIONING"), pin("negative", "CONDITIONING"), pin("vae", "VAE"),
               pin("length", "INT", True), pin("anchor_samples", "LATENT"), pin("motion_latent_count", "INT", True),
               pin("prev_samples", "LATENT", optional=True), pin("end_image", "IMAGE", optional=True)],
              [out("positive", "CONDITIONING"), out("negative", "CONDITIONING"), out("latent", "LATENT")],
              {"length": 81, "motion_latent_count": 1})
     n["properties"].pop("cnr_id")
-    n["properties"]["aux_id"] = "kuromatcha/mines-img2vid"
+    n["properties"]["aux_id"] = "kuromatcha/mines-pack"
     lk(*pos_cond, n["id"], 0, "CONDITIONING")
     lk(neg["id"], 0, n["id"], 1, "CONDITIONING")
     lk(vae["id"], 0, n["id"], 2, "VAE")
@@ -233,7 +233,7 @@ for k in range(2, N + 1):
     outer["inputs"].insert(at + k - 2, {"label": f"prompt {k}", "name": name, "type": "STRING",
                                         "widget": {"name": name}, "link": None})
     vals[name] = ""
-loader = [n for n in d["nodes"] if n["type"] == "DaSiWaLoadImageOptional"][0]
+loader = [n for n in d["nodes"] if n["type"] == "MinesLoadImageOptional"][0]
 loader["title"] = "End image (segment 1)"
 ox = max(n["pos"][0] + n["size"][0] for n in d["nodes"]) + 40
 for k in range(2, N + 1):
@@ -317,7 +317,7 @@ sg["state"]["lastLinkId"] = max(l["id"] for l in sg["links"])
 ids = {n["id"] for n in sg["nodes"]} | {-10, -20}
 assert all(l["origin_id"] in ids and l["target_id"] in ids for l in sg["links"])
 for n in sg["nodes"]:
-    if n["type"] in ("KSamplerAdvanced", "DaSiWaSVIProEndFrame", "VAEDecode", "ImageBatchExtendWithOverlap"):
+    if n["type"] in ("KSamplerAdvanced", "MinesSVIProEndFrame", "VAEDecode", "ImageBatchExtendWithOverlap"):
         assert all(i["link"] is not None for i in n["inputs"] if i.get("shape") != 7 and not i.get("widget")), n["title"]
 open(dst, "w", encoding="utf-8").write(json.dumps(d, ensure_ascii=False))
 print(f"long workflow ({N} segments):", dst.replace("\\", "/").split("/")[-1])

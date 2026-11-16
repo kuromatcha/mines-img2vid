@@ -1,6 +1,6 @@
 # mines-img2vid
 
-ComfyUI image-to-video workflows for **DaSiWa WAN 2.2 I2V 14B v11**, set up with the model developer's own defaults, plus one reference-to-video workflow with audio for **DaSiWa MiniMax H3**.
+ComfyUI image-to-video workflows for **DaSiWa WAN 2.2 I2V 14B v11**, set up with the model developer's own defaults, plus three video-with-audio workflows for **MiniMax H3**: reference-to-video and hybrid (references plus first/last frame) with **DaSiWa MiniMax H3**, and first/last-frame-to-video with the base H3 model.
 
 | Workflow | Makes | Needs |
 |---|---|---|
@@ -10,6 +10,8 @@ ComfyUI image-to-video workflows for **DaSiWa WAN 2.2 I2V 14B v11**, set up with
 | **Mine's I2V Painter NVFP4** | Image to video with the PainterI2V node (motion boost, no end image) | RTX 50-series |
 | **Mine's Long NVFP4** | Longer video, one prompt per 5 s segment (SVI 2.0 Pro) | RTX 50-series |
 | **Mine's Ref2VA INT8** | Video with sound from up to 3 reference images (MiniMax H3, a different model: see [Ref2VA](docs/settings.md#ref2va-workflow-minimax-h3)) | 16 GB+ GPU, about 36 GB RAM plus page file |
+| **Mine's FL2VA NVFP4** | Video with sound from a first frame and an optional last frame (base MiniMax H3 FL2VA model: see [FL2VA](docs/settings.md#fl2va-workflow-minimax-h3)) | RTX 50-series, about 28 GB RAM plus page file |
+| **Mine's Hybrid INT8** | Video with sound that starts on a first frame (optional last frame) and takes the character, place or outfit from up to 3 references (DaSiWa MiniMax H3: see [Hybrid](docs/settings.md#hybrid-workflow-minimax-h3)) | 16 GB+ GPU, about 36 GB RAM plus page file |
 
 The GGUF versions were dropped: they gave the same results as NVFP4 at about half the speed. The WAN workflows therefore need an RTX 50-series card.
 
@@ -24,7 +26,7 @@ The GGUF versions were dropped: they gave the same results as NVFP4 at about hal
 ## Docs
 
 - [Install](docs/install.md): hardware, node packs, model downloads, launch settings
-- [Settings](docs/settings.md): what each setting does and the recommended values (including the Ref2VA workflow)
+- [Settings](docs/settings.md): what each setting does and the recommended values (including the Ref2VA, FL2VA and Hybrid workflows)
 - [Recommended practice](docs/practice.md): test-then-render routine, prompting tips, measured speed
 - [Troubleshooting](docs/troubleshooting.md): out-of-memory, loop flash, mouth movement, missing nodes
 - [Camera and motion tests](docs/camera-tests.md): why the camera stays still, getting more motion, what was tried and dropped

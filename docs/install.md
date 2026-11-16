@@ -24,10 +24,10 @@ Install with ComfyUI-Manager ("Install Custom Nodes") or `git clone` into `Comfy
 | Pack | Needed for | Source |
 |---|---|---|
 | **ComfyUI-DaSiWa-Nodes** | `Seamless Loop` node (loop workflows), `RTX Upscaler & Refiner` node (optional RTX upscale, all workflows) | https://github.com/darksidewalker/ComfyUI-DaSiWa-Nodes |
-| **mines-pack** (shows as *mine's pack*) | **Required by all workflows.** `color drift fix` (I2V and Loop workflows); `keep source colors` (after the RTX upscale, all workflows); `load image (optional)` (end image, I2V and Long workflows; references, Ref2VA workflow); `SVIPro end frame` (Long workflows); on Windows also hides the harmless WinError 10054 console traceback ([troubleshooting](troubleshooting.md)) | https://github.com/kuromatcha/mines-pack — `git clone https://github.com/kuromatcha/mines-pack.git` (not listed in ComfyUI-Manager) |
+| **mines-pack** (shows as *mine's pack*) | **Required by all workflows.** `color drift fix` (I2V, Loop and Hybrid workflows); `keep source colors` (after the RTX upscale, all workflows); `load image (optional)` (end image, I2V and Long workflows; references, Ref2VA and Hybrid workflows; last frame, FL2VA and Hybrid workflows); `H3 frame guides` (Hybrid workflow); `SVIPro end frame` (Long workflows); on Windows also hides the harmless WinError 10054 console traceback ([troubleshooting](troubleshooting.md)) | https://github.com/kuromatcha/mines-pack — `git clone https://github.com/kuromatcha/mines-pack.git` (not listed in ComfyUI-Manager) |
 | **ComfyUI-PainterI2V** | `PainterI2V` node (Mine's I2V Painter NVFP4) | https://github.com/princepainter/ComfyUI-PainterI2V |
 | **ComfyUI-PainterFLF2V** | `PainterFLF2V` node (Mine's Loop Painter NVFP4). A separate pack from PainterI2V | https://github.com/princepainter/ComfyUI-PainterFLF2V — `git clone https://github.com/princepainter/ComfyUI-PainterFLF2V.git` (not listed in ComfyUI-Manager) |
-| **ComfyUI-KJNodes** | `Wan Chunk FeedForward` node (optional FFN chunking, all workflows) and `MiniMax Chunk FeedForward` (Ref2VA workflow); `Wan Image To Video SVIPro` and `Image Batch Extend With Overlap` (Long workflows) | https://github.com/kijai/ComfyUI-KJNodes |
+| **ComfyUI-KJNodes** | `Wan Chunk FeedForward` node (optional FFN chunking, all workflows) and `MiniMax Chunk FeedForward` (Ref2VA, FL2VA and Hybrid workflows); `Wan Image To Video SVIPro` and `Image Batch Extend With Overlap` (Long workflows) | https://github.com/kijai/ComfyUI-KJNodes |
 
 ComfyUI-DaSiWa-Nodes lists heavy extras in its `requirements.txt` (LLM, RTX, AMD tools). **Seamless Loop does not need them.** The pack loads without installing them; they only load when you use those other nodes. If an installer insists, skipping `llama-cpp-python` is fine (it often fails to build on Windows).
 
@@ -68,6 +68,18 @@ All paths are inside `ComfyUI/models/` (or your shared models folder).
 | `frame_interpolation/` | `rife_v4.26.safetensors` | 23 MB | same as above *(interpolation)* |
 
 The RIFE file is only used when **interpolate** is above 1, but ComfyUI lists it as missing at load while it is absent, because the loader node is in the graph.
+
+### FL2VA workflow (MiniMax H3)
+
+**Mine's FL2VA NVFP4** uses the base MiniMax H3 first/last-frame model. (DaSiWa's models are hybrids that also take first/last frames: that is the Hybrid workflow below.) Same requirements as the Ref2VA workflow, plus an RTX 50-series card for the NVFP4 model. The text encoder, VAEs and RIFE file are the same as in the Ref2VA table; only the model differs. Model plus text encoder are about 28 GB.
+
+| Folder | File | Size | Source |
+|---|---|---|---|
+| `diffusion_models/` | `MiniMax_H3_FL2VA_pruned_nvfp4.safetensors` | 12.53 GB | [Abiray/Minimax-H3-nvfp4-INT4-INT8-Convrot](https://huggingface.co/Abiray/Minimax-H3-nvfp4-INT4-INT8-Convrot) |
+
+### Hybrid workflow (MiniMax H3)
+
+**Mine's Hybrid INT8** uses the same files as the Ref2VA workflow (no extra download): DaSiWa's model takes references and first/last frames in one clip. It needs a current **mines-pack** for the `H3 frame guides` node.
 
 **Gated DaSiWa repo:** log in to Hugging Face, open the repo page and accept the access request. Then either download in the browser, or log in once from a terminal with ComfyUI's Python and download from there:
 

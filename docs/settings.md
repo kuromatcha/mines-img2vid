@@ -80,3 +80,38 @@ With PainterFLF2V the Loop variant closes as well as the plain Loop (seam 0.64�
 | mute audio | **off** | Saves the video without a sound track; the audio is not decoded at all. |
 
 **Inside the subgraph:** *Sampler* **res_multistep** / *Scheduler* **simple**, CFG 1, no negative prompt. *Seed* is random; set *fixed* to keep one. Reference size in *Build conditioning from references*: **match** (*max* keeps the identity sharper but is much slower). Model files are picked on the *Load …* nodes. Routine: test at 0.3 MP, 5 s with the extras off; rerun until the motion is right, fix the seed; then render at 0.6 MP and 25 steps and add upscale or interpolation.
+
+## FL2VA workflow (MiniMax H3)
+
+**Mine's FL2VA NVFP4** makes a video with sound that starts on a first frame and, optionally, ends on a last frame, with the base MiniMax H3 FL2VA model (NVFP4 build). For references plus frames with the DaSiWa model, see the [Hybrid workflow](#hybrid-workflow-minimax-h3). It is built from the Ref2VA workflow, so the layout, upscale, interpolation and audio switches are the same. Models: [install](install.md#fl2va-workflow-minimax-h3). Tested with short clips (3 s, 0.3 MP, 20 steps: about 40 s each on an RTX 5070 Ti once loaded): first frame only follows the prompted motion; with a near-identical last frame and a small-motion prompt the clip lands on it but hardly moves (see *last frame*). The values below are the model's and the official template's own.
+
+| Setting | Default | Suggestion |
+|---|---|---|
+| first frame | required | The video starts on it and takes its aspect ratio. It is `<Picture 1>` in the prompt. The pose, outfit and background come from it: describe the motion, not the picture. |
+| last frame | **none** | Optional end frame, `<Picture 2>` in the prompt. Keep the same aspect ratio and character as the first frame. Add it to the header at the clip's end time (`At 3.00 seconds into the target video, Picture 2 (from Shot 1) is fully referenced.`) and end the description on `<Picture 2>`. With a last frame that is the same as, or close to, the first, the clip moves only as much as the prompt asks: prompt a clear motion that returns (see the Hybrid *Loop* row), or the clip barely moves. |
+| prompt | example prompt | A header line `For the target video, at 0.00 seconds into the target video, Picture 1 (from Shot 1) is fully referenced.`, then `integrated_multimodal_description` (`[Shot 1]` camera, subject, motion, scene; a later cut as `[Shot 2] At 00:03.000 …`), `overall_soundscape` (dialogue in quotes) and `non_diegetic_music` (or *N/A*). |
+| megapixels | **0.6** | **0.3** test · **0.6** normal · **0.8** high. Trained around 0.8 (native: 768 px short edge, capped near 1 MP). Turn FFN chunking on from about 0.7 MP. |
+| duration (seconds) | **5** | Trained on 5–15 s. The frame count is rounded up to a multiple of 17, plus 5. |
+| fps | **24** | Keep 24: the model is trained at 24 fps. |
+| interpolate | **1 (off)** | 2 doubles the fps with RIFE (48 fps). |
+| steps | **20** | 20–25: not a Turbo model. |
+| shift | **12** | Video shift. 12 (audio 3, in *Set shift*) is the model's built-in default, the same as running without a shift node. |
+| FFN chunking | **off** | Less VRAM, slower. On from about 0.7 MP. |
+| RTX 2x | **off** | 2× RTX Video Super Resolution with *Keep colors after RTX*, as in Ref2VA. RelayVSR was left out for the same reason. |
+| mute audio | **off** | Saves the video without a sound track; the audio is not decoded at all. |
+
+**Inside the subgraph:** *Sampler* **res_multistep** / *Scheduler* **simple**, CFG 1, no negative prompt, *comfy kitchen attention* as in the other workflows (set *pytorch attention* on *Set attention backend* if you see artifacts). *Seed* is random; set *fixed* to keep one.
+
+## Hybrid workflow (MiniMax H3)
+
+**Mine's Hybrid INT8** combines the two: the clip starts on a **first frame** (and can end on a **last frame**), while **references** set the character, the place or an outfit, each from its own picture. It uses the DaSiWa GXS v5 model of the Ref2VA workflow (DaSiWa's models are trained for references and frames) and ComfyUI's *Add Guide for MiniMax H3*, through mines-pack's *H3 frame guides* on *Pin first and last frame*. Models: [install](install.md#hybrid-workflow-minimax-h3). Tested with 3 s and 6 s clips at 0.3 MP, 20 steps (45–56 s for 3 s on an RTX 5070 Ti once loaded): the clip starts on the first frame, keeps the referenced character and cafe, follows the prompted motion, and lands on the last frame when one is set. Settings not listed are as in [Ref2VA](#ref2va-workflow-minimax-h3).
+
+| Setting | Default | Suggestion |
+|---|---|---|
+| first frame | required | The video starts on it and takes its aspect ratio and size. It is not a `<Picture>` in the prompt. Give it the same background as the place reference: a first frame on a white sheet with a cafe reference dissolves from white into the cafe over the first 0.6 s. |
+| last frame | **none** | Optional end frame, same aspect ratio as the first. |
+| loop | **off** | On: the first frame is also pinned as the last frame (the last frame slot is ignored), so the clip ends where it starts. Tested: the jump from the last frame back to the first is about one ordinary frame step (2.2 vs 1.7 at 6 s). DaSiWa's Seamless Loop (as in the WAN Loop workflow) was tried on top and left out: it shortened the clip and made the jump larger (3.95). Prompt one steady, repeating motion (breathing, a sway) rather than actions with an end point, and say that the last moment matches the first; 5–6 s gives a natural pace. |
+| reference 1, 2, 3 | 1 required, 2 and 3 **none** | `<Picture 1>`, `<Picture 2>`, `<Picture 3>` in the prompt, numbered by the slots that are filled. E.g. reference 1 the character, reference 2 the place. |
+| color drift fix | **1** | Keeps every frame in the first frame's tone. The model renders the pinned first frame in its own tone within the first frames (measured on a large figure on white: ΔE 3.1 by frame 8, 2.7 at the end; with the fix 0.4 at the end, same as the WAN workflows' *Fix color drift*). 0 = off. |
+| prompt | example prompt | The Ref2VA format: `subject_definitions` (one subject per reference: the character, the place), `summary`, `retention_analysis` (`fully_preserved` for each), `detailed_description`, `overall_soundscape`, `non_diegetic_music`. Describe the motion from the first frame on. |
+

@@ -24,7 +24,7 @@ Install with ComfyUI-Manager ("Install Custom Nodes") or `git clone` into `Comfy
 | Pack | Needed for | Source |
 |---|---|---|
 | **ComfyUI-DaSiWa-Nodes** | `Seamless Loop` node (loop workflows), `RTX Upscaler & Refiner` node (optional RTX upscale, all workflows) | https://github.com/darksidewalker/ComfyUI-DaSiWa-Nodes |
-| **mines-pack** (shows as *mine's pack*) | **Required by all workflows.** `color drift fix` (I2V, Loop and Hybrid workflows); `keep source colors` (after the RTX upscale, all workflows); `load image (optional)` (end image, I2V and Long workflows; references, Ref2VA and Hybrid workflows; last frame, FL2VA and Hybrid workflows); `H3 frame guides` (Hybrid workflow); `SVIPro end frame` (Long workflows); on Windows also hides the harmless WinError 10054 console traceback ([troubleshooting](troubleshooting.md)) | https://github.com/kuromatcha/mines-pack — `git clone https://github.com/kuromatcha/mines-pack.git` (not listed in ComfyUI-Manager) |
+| **mines-pack** (shows as *mine's pack*) | **Required by all workflows.** `color drift fix` (I2V, Loop and Hybrid workflows); `keep source colors` (after the RTX upscale, all workflows); `H3 frame guides` (Hybrid workflow); `SVIPro end frame` (Long workflows); on Windows also hides the harmless WinError 10054 console traceback ([troubleshooting](troubleshooting.md)) | https://github.com/kuromatcha/mines-pack — `git clone https://github.com/kuromatcha/mines-pack.git` (not listed in ComfyUI-Manager) |
 | **ComfyUI-PainterI2V** | `PainterI2V` node (Mine's I2V Painter NVFP4) | https://github.com/princepainter/ComfyUI-PainterI2V |
 | **ComfyUI-PainterFLF2V** | `PainterFLF2V` node (Mine's Loop Painter NVFP4). A separate pack from PainterI2V | https://github.com/princepainter/ComfyUI-PainterFLF2V — `git clone https://github.com/princepainter/ComfyUI-PainterFLF2V.git` (not listed in ComfyUI-Manager) |
 | **ComfyUI-KJNodes** | `Wan Chunk FeedForward` node (optional FFN chunking, all workflows) and `MiniMax Chunk FeedForward` (Ref2VA, FL2VA and Hybrid workflows); `Wan Image To Video SVIPro` and `Image Batch Extend With Overlap` (Long workflows) | https://github.com/kijai/ComfyUI-KJNodes |
@@ -57,7 +57,7 @@ All paths are inside `ComfyUI/models/` (or your shared models folder).
 
 ### Ref2VA workflow (MiniMax H3)
 
-**Mine's Ref2VA INT8** uses a different model family. It needs ComfyUI 0.45.3 or newer with the native MiniMax H3 nodes, plus the KJNodes, mines-pack and DaSiWa-Nodes packs above (it uses `MiniMax Chunk FeedForward`, `load image (optional)` and the RTX upscaler). No NVFP4 card is needed. The model plus the text encoder are about 36 GB, so on 32 GB of RAM it relies on the page file and the first run is slow.
+**Mine's Ref2VA INT8** uses a different model family. It needs ComfyUI 0.45.3 or newer with the native MiniMax H3 nodes, plus the KJNodes, mines-pack and DaSiWa-Nodes packs above (it uses `MiniMax Chunk FeedForward` and the RTX upscaler). No NVFP4 card is needed. The model plus the text encoder are about 36 GB, so on 32 GB of RAM it relies on the page file and the first run is slow.
 
 | Folder | File | Size | Source |
 |---|---|---|---|

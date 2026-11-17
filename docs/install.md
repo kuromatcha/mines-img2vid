@@ -19,7 +19,7 @@ Everything a new PC needs to run the workflows.
 
 Install with ComfyUI-Manager ("Install Custom Nodes") or `git clone` into `ComfyUI/custom_nodes/`, then restart.
 
-**mines-pack is required.** It holds this project's own nodes (the optional image loader, the SVIPro end frame, color drift fix and keep source colors). Without it every workflow opens with missing nodes. It replaces the `ComfyUI-DaSiWa-EndFrame` folder that used to ship in this repository: if you copied that folder into `ComfyUI/custom_nodes/` before, delete it, since those old nodes are no longer used.
+**mines-pack is required.** It holds this project's own nodes (the SVIPro end frame, H3 frame guides, color drift fix and keep source colors). Without it every workflow opens with missing nodes. It replaces the `ComfyUI-DaSiWa-EndFrame` folder that used to ship in this repository: if you copied that folder into `ComfyUI/custom_nodes/` before, delete it, since those old nodes are no longer used.
 
 | Pack | Needed for | Source |
 |---|---|---|

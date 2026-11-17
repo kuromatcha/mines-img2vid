@@ -15,7 +15,7 @@ ComfyUI image-to-video workflows for **DaSiWa WAN 2.2 I2V 14B v11**, set up with
 
 The GGUF versions were dropped: they gave the same results as NVFP4 at about half the speed. The WAN workflows therefore need an RTX 50-series card.
 
-> **Needs [mines-pack](https://github.com/kuromatcha/mines-pack)**, this project's own node pack (color drift fix, keep colors after RTX upscale, optional image loader, SVIPro end frame). Clone it into `ComfyUI/custom_nodes/` and restart ComfyUI; without it every workflow shows missing nodes. It replaces the `ComfyUI-DaSiWa-EndFrame` folder that used to ship here.
+> **Needs [mines-pack](https://github.com/kuromatcha/mines-pack)**, this project's own node pack (color drift fix, keep colors after RTX upscale, SVIPro end frame, H3 frame guides). Clone it into `ComfyUI/custom_nodes/` and restart ComfyUI; without it every workflow shows missing nodes. It replaces the `ComfyUI-DaSiWa-EndFrame` folder that used to ship here.
 
 ## Quick start
 

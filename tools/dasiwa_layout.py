@@ -182,8 +182,11 @@ FRONT_W = {"image": 480, "settings": 640, "video": 480, "guide": 560}
 def front(d, sg):
     outer = [n for n in d["nodes"] if n["type"] == sg["id"]][0]
     top = {n["type"]: n for n in d["nodes"]}
-    start = top["LoadImage"]
-    ends = sorted((n for n in d["nodes"] if n["type"] == "MinesLoadImageOptional"), key=lambda n: n["title"])
+    # The start image and the optional end images are all core Load Image nodes, told apart by title.
+    loaders = [n for n in d["nodes"] if n["type"] == "LoadImage"]
+    start = [n for n in loaders if n.get("title") == "Start image"][0]
+    ends = sorted((n for n in loaders if n is not start),
+                  key=lambda n: [int(t) if t.isdigit() else t for t in re.split(r"(\d+)", n["title"])])
     row = [(n, "image") for n in [start] + ends] + [(outer, "settings"), (top["SaveVideo"], "video"),
                                                    (top["MarkdownNote"], "guide")]
     assert len(row) == len(d["nodes"]), "unplaced front-panel node"

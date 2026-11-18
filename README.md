@@ -1,35 +1,45 @@
-# mines-img2vid
+# mines-I2V
 
-ComfyUI image-to-video workflows for **DaSiWa WAN 2.2 I2V 14B v11**, set up with the model developer's own defaults, plus three video-with-audio workflows for **MiniMax H3**: reference-to-video and hybrid (references plus first/last frame) with **DaSiWa MiniMax H3**, and first/last-frame-to-video with the base H3 model.
+ComfyUI image-to-video workflows, ready to run with tested defaults.
 
-| Workflow | Makes | Needs |
+- **WAN 2.2** (DaSiWa WAN 2.2 I2V 14B v11): silent video from a start image.
+- **MiniMax H3**: video with sound from reference images, a first and last frame, or both.
+
+## Workflows
+
+| Workflow | What you get | Model |
 |---|---|---|
-| **Mine's Loop NVFP4** | Seamless loop | RTX 50-series |
-| **Mine's I2V NVFP4** | Image to video | RTX 50-series |
-| **Mine's Loop Painter NVFP4** | Seamless loop with the PainterFLF2V node (motion boost) | RTX 50-series |
-| **Mine's I2V Painter NVFP4** | Image to video with the PainterI2V node (motion boost, no end image) | RTX 50-series |
-| **Mine's Long NVFP4** | Longer video, one prompt per 5 s segment (SVI 2.0 Pro) | RTX 50-series |
-| **Mine's Ref2VA INT8** | Video with sound from up to 3 reference images (MiniMax H3, a different model: see [Ref2VA](docs/settings.md#ref2va-workflow-minimax-h3)) | 16 GB+ GPU, about 36 GB RAM plus page file |
-| **Mine's FL2VA NVFP4** | Video with sound from a first frame and an optional last frame (base MiniMax H3 FL2VA model: see [FL2VA](docs/settings.md#fl2va-workflow-minimax-h3)) | RTX 50-series, about 28 GB RAM plus page file |
-| **Mine's Hybrid INT8** | Video with sound that starts on a first frame (optional last frame) and takes the character, place or outfit from up to 3 references (DaSiWa MiniMax H3: see [Hybrid](docs/settings.md#hybrid-workflow-minimax-h3)) | 16 GB+ GPU, about 36 GB RAM plus page file |
+| **Mine's I2V NVFP4** | Video from a start image, optional end image | WAN 2.2 |
+| **Mine's Loop NVFP4** | Seamless loop | WAN 2.2 |
+| **Mine's I2V Painter NVFP4** | I2V with more motion (PainterI2V), no end image | WAN 2.2 |
+| **Mine's Loop Painter NVFP4** | Loop with more motion (PainterFLF2V) | WAN 2.2 |
+| **Mine's Long NVFP4** | Longer video, one prompt per 5 s segment | WAN 2.2 + SVI 2.0 Pro |
+| **Mine's Ref2VA INT8** | Video with sound from up to 3 reference images | DaSiWa MiniMax H3 |
+| **Mine's FL2VA NVFP4** | Video with sound from a first frame, optional last frame | MiniMax H3 (base) |
+| **Mine's Hybrid INT8** | Video with sound: first/last frame plus up to 3 references | DaSiWa MiniMax H3 |
 
-The GGUF versions were dropped: they gave the same results as NVFP4 at about half the speed. The WAN workflows therefore need an RTX 50-series card.
+## Requirements
 
-> **Needs [mines-pack](https://github.com/kuromatcha/mines-pack)**, this project's own node pack (color drift fix, keep colors after RTX upscale, SVIPro end frame, H3 frame guides). Clone it into `ComfyUI/custom_nodes/` and restart ComfyUI; without it every workflow shows missing nodes. It replaces the `ComfyUI-DaSiWa-EndFrame` folder that used to ship here.
+- **GPU:** 16 GB VRAM. The NVFP4 workflows need an RTX 50-series card; the two INT8 workflows do not.
+- **RAM:** 32 GB plus a Windows page file. The MiniMax H3 workflows load about 28–36 GB.
+- **ComfyUI** 0.45.3 or newer.
+- **[mines-pack](https://github.com/kuromatcha/mines-pack)**, this project's node pack. Every workflow needs it.
+
+Model files are not included. The DaSiWa models may not be redistributed, so download them from their original pages.
 
 ## Quick start
 
-1. Install ComfyUI, the node packs (including **mines-pack**) and the models: [docs/install.md](docs/install.md)
+1. Follow the [setup guide](docs/setup.md): node packs, models, launch settings.
 2. Drag a file from [`workflows/`](workflows) into ComfyUI.
 3. Load your image, write a prompt, keep the defaults and run.
 
 ## Docs
 
-- [Install](docs/install.md): hardware, node packs, model downloads, launch settings
-- [Settings](docs/settings.md): what each setting does and the recommended values (including the Ref2VA, FL2VA and Hybrid workflows)
-- [Recommended practice](docs/practice.md): test-then-render routine, prompting tips, measured speed
-- [Troubleshooting](docs/troubleshooting.md): out-of-memory, loop flash, mouth movement, missing nodes
-- [Camera and motion tests](docs/camera-tests.md): why the camera stays still, getting more motion, what was tried and dropped
-- [Tools](tools/README.md): build a Long workflow with more segments, tidy the layout
-
-Model files are not included (DaSiWa may not be redistributed).
+| | |
+|---|---|
+| [Setup](docs/setup.md) | Hardware, node packs, model downloads, launch settings, page file |
+| [Settings](docs/settings.md) | What each setting does and the recommended values, per workflow |
+| [Recommended practice](docs/practice.md) | Test-then-render routine, prompting tips, measured speed |
+| [Troubleshooting](docs/troubleshooting.md) | Out of memory, loop flash, mouth movement, missing nodes |
+| [Camera and motion tests](docs/camera-tests.md) | Why the camera stays still, how to get more motion, what was tried and dropped |
+| [Tools](tools/README.md) | Build a Long workflow with more segments, tidy a layout, stitch clips |

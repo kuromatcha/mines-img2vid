@@ -11,7 +11,7 @@ python -I tools/dasiwa_stitch.py "idle9_*_00001_.mp4" -o video/idle9_loop
 python -I tools/dasiwa_stitch.py part1.mp4 part2.mp4 --no-loop
 ```
 
-Clips can be full paths, or file names or globs in the output/video, output or input folder. Clips of a different size are scaled to the first clip's size, and the first clip's fps is used. `--overlap N` and `--mode` change the join, `--no-loop` only joins, `--rtx` uses RTX Frame Generation for the loop point, and `--dry-run` prints the graph. The script prints the saved file's path.
+Clips can be full paths, or file names or globs in the output/video, output or input folder. Those folders are looked up under `--shared`, which defaults to `D:/Comfy-Desktop/ComfyUI-Shared`: pass `--shared <folder that holds ComfyUI's input and output folders>` on another PC, and `--server <address>` if ComfyUI is not on `http://127.0.0.1:8188`. Clips of a different size are scaled to the first clip's size, and the first clip's fps is used. `--overlap N` and `--mode` change the join, `--no-loop` only joins, `--rtx` uses RTX Frame Generation for the loop point, and `--dry-run` prints the graph. The script prints the saved file's path.
 
 ## `dasiwa_long.py`: Long workflow with more segments
 
@@ -22,7 +22,7 @@ python -I tools/dasiwa_long.py "workflows/Mine's I2V NVFP4.json" "workflows/Mine
 python -I tools/dasiwa_layout.py "workflows/Mine's Long NVFP4.json"
 ```
 
-The output file is overwritten. With 2 segments, the result matches the Long workflows in this repository.
+The output file is overwritten. With 2 segments, the result matches **Mine's Long NVFP4** in this repository.
 
 ## `dasiwa_layout.py`: tidy layout
 

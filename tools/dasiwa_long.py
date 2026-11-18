@@ -5,7 +5,7 @@ Usage: python -I tools/dasiwa_long.py <finished I2V workflow> <output workflow> 
 - SVI 2.0 Pro LoRAs on both models (KJNodes "Wan Image To Video SVIPro" + LoraLoaderModelOnly).
 - Every segment is conditioned on the start image (anchor, keeps the character) and on the last latent of the
   previous segment (keeps the motion going), so joints carry momentum instead of restarting from a still frame.
-- Every segment has an optional end image (front panel "End image (segment N)", "none" = skip): the pose that
+- Every segment has an optional end image (front panel "End image (segment N)", bypassed = skip): the pose that
   segment ends on, placed on its last frame. Needs an I2V workflow from workflows/ (it has the end image input)
   and the SVIPro end frame node from mines-pack (github.com/kuromatcha/mines-pack).
 - Each decoded segment after the first starts by replaying the last 5 frames of the previous one; those are
@@ -15,7 +15,7 @@ Usage: python -I tools/dasiwa_long.py <finished I2V workflow> <output workflow> 
 import copy, json, sys, uuid
 
 END_LINE = ("- **End image** (optional): the pose the clip ends on, e.g. the front view after a turn. "
-            "*none* = skip. Keep framing, background and style the same as the start image.\n")
+            "Bypassed (Ctrl+B) = skip. Keep framing, background and style the same as the start image.\n")
 
 src, dst, N = sys.argv[1], sys.argv[2], int(sys.argv[3])
 assert 2 <= N <= 12
@@ -244,7 +244,7 @@ for k in range(2, N + 1):
     outer["inputs"].insert(at + k - 2, {"label": f"prompt {k}", "name": name, "type": "STRING",
                                         "widget": {"name": name}, "link": None})
     vals[name] = ""
-loader = [n for n in d["nodes"] if n["type"] == "MinesLoadImageOptional"][0]
+loader = [n for n in d["nodes"] if n["type"] == "LoadImage" and n.get("title", "").startswith("End image")][0]
 loader["title"] = "End image (segment 1)"
 ox = max(n["pos"][0] + n["size"][0] for n in d["nodes"]) + 40
 for k in range(2, N + 1):
@@ -296,7 +296,7 @@ sg["name"] = "Mine's Long NVFP4"
 d["id"] = str(uuid.uuid4())
 for n in d["nodes"]:
     if n["type"] == "SaveVideo":
-        n["widgets_values"][0] = "video/DaSiWa_long_nvfp4"
+        n["widgets_values"][0] = "video/clip"
         if "widgets_values_named" in n:
             n["widgets_values_named"][list(n["widgets_values_named"])[0]] = n["widgets_values"][0]
 note = [n for n in d["nodes"] if n["type"] == "MarkdownNote"][0]
@@ -308,7 +308,7 @@ for a, b in (("- **color drift fix**: 1 · 0 = off. Removes slow color drift so 
              ("- **duration (seconds)**: 5. Longer drifts.\n", "- **segment length (seconds)**: 5. Longer drifts.\n"),
              ("- Seed: random. To keep one: *Sample high-noise steps* → fixed.\n",
               "- Seeds: random. To keep one: *Sample high-noise steps (segment N)* → fixed.\n- SVI LoRA strength: *Apply SVI LoRA* nodes (1.0).\n"),
-             (END_LINE, "- **End image (segment N)** (optional): the pose that segment ends on. *none* = it ends "
+             (END_LINE, "- **End image (segment N)** (optional): the pose that segment ends on. Bypassed (Ctrl+B) = it ends "
                         "freely and the next segment continues from there. Keep framing, background and style the same.\n"),
              ("1. Test: 0.3 MP, 3 s, extras off.\n", "1. Test: 0.3 MP, 3 s segments, extras off.\n")):
     assert g.count(a) == 1, a

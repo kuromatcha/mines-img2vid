@@ -1,4 +1,4 @@
-# mines-I2V
+# mines-video
 
 ComfyUI image-to-video workflows, ready to run with tested defaults.
 
